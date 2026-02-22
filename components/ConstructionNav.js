@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 
 const links = [
   { href: '/', label: 'Dashboard', icon: '📊' },
@@ -11,6 +12,8 @@ const links = [
 ];
 
 export default function ConstructionNav() {
+  const [open, setOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-50" style={{ background: 'linear-gradient(135deg, #0f1a2e, #1a2744)', borderBottom: '1px solid rgba(212,168,83,0.15)' }}>
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -22,6 +25,8 @@ export default function ConstructionNav() {
             <p className="text-xs leading-tight" style={{ color: '#d4a853' }}>Management Dashboard</p>
           </div>
         </a>
+
+        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
           {links.map(l => (
             <a key={l.href} href={l.href}
@@ -31,7 +36,40 @@ export default function ConstructionNav() {
             </a>
           ))}
         </nav>
+
+        {/* Hamburger */}
+        <button onClick={() => setOpen(!open)} className="md:hidden flex flex-col gap-1.5 p-2"
+          aria-label="Menu">
+          <span className="block w-6 h-0.5 rounded transition-all" style={{
+            background: '#d4a853',
+            transform: open ? 'rotate(45deg) translate(3px, 3px)' : 'none',
+          }}></span>
+          <span className="block w-6 h-0.5 rounded transition-all" style={{
+            background: '#d4a853',
+            opacity: open ? 0 : 1,
+          }}></span>
+          <span className="block w-6 h-0.5 rounded transition-all" style={{
+            background: '#d4a853',
+            transform: open ? 'rotate(-45deg) translate(3px, -3px)' : 'none',
+          }}></span>
+        </button>
       </div>
+
+      {/* Mobile menu */}
+      {open && (
+        <nav className="md:hidden px-4 pb-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="grid grid-cols-2 gap-2 pt-3">
+            {links.map(l => (
+              <a key={l.href} href={l.href}
+                className="flex items-center gap-2.5 px-4 py-3 rounded-xl transition-all"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <span className="text-lg">{l.icon}</span>
+                <span className="text-sm font-semibold text-white">{l.label}</span>
+              </a>
+            ))}
+          </div>
+        </nav>
+      )}
     </header>
   );
 }
