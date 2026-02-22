@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: #0f1a2e;
+  color: #fff;
+}
+
+@media print {
+  * { background: white !important; color: black !important; box-shadow: none !important; border-color: #ddd !important; }
+  header, footer, nav, button, a[href="/"] { display: none !important; }
+  .text-red-400, .text-red-700 { color: #dc2626 !important; }
+  .text-emerald-400, .text-emerald-800, .text-green-400 { color: #16a34a !important; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #ccc; padding: 4px 8px; }
+}
