@@ -39,7 +39,7 @@ export default async function ClientsPage() {
     const cid = getRelationId(t,'Client');
     const client = clientNames[cid] || 'Sin Cliente';
     const project = projectNames[getRelationId(t,'Project')] || 'General';
-    const amount = getNumber(t,'Fixed Amount')||0;
+    const amount = getNumber(t,'Amount')||getNumber(t,'Fixed Amount')||0;
     if (!clientDebt[client]) clientDebt[client] = {};
     if (!clientDebt[client][project]) clientDebt[client][project] = [];
     clientDebt[client][project].push({

@@ -35,7 +35,7 @@ export default async function ConstructionDashboard() {
   const tsData = timesheets.map(t => ({
     task: getTitle(t), hours: getNumber(t,'Hours')||0, date: getDate(t,'Date'),
     status: getSelect(t,'Status'), empPay: getSelect(t,'Employee payment status'),
-    amount: getNumber(t,'Fixed Amount')||0,
+    amount: getNumber(t,'Amount')||getNumber(t,'Fixed Amount')||0,
     worker: peopleNames[getRelationId(t,'Employee')] || '',
     client: clientNames[getRelationId(t,'Client')] || '',
     project: projectNames[getRelationId(t,'Project')] || '',
