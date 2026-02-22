@@ -9,6 +9,7 @@ const links = [
   { href: '/projects', label: 'Projects', icon: '🏗️' },
   { href: '/maintenance', label: 'Maintenance', icon: '🔧' },
   { href: '/calendar', label: 'Calendar', icon: '📅' },
+  { href: '/accounts', label: 'Accounts', icon: '🤝' },
 ];
 
 export default function ConstructionNav() {

@@ -1,11 +1,14 @@
 import { getDB } from '@/lib/config';
 import { queryDB, buildNameMap, getTitle, getNumber, getSelect, getDate, getRelationId } from '@/lib/notion';
 import ConstructionNav from '@/components/ConstructionNav';
+import MonthFilter from '@/components/MonthFilter';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ExpensesPage() {
+export default async function ExpensesPage({ searchParams }) {
   const fmt = (n) => { const a=Math.abs(n||0); return (n<0?'-':'')+a.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2}); };
+  const params = await searchParams;
+  const selectedMonth = params?.month || null;
 
   let expenses=[];
   let clientNames={}, projectNames={};
@@ -13,12 +16,24 @@ export default async function ExpensesPage() {
   try { projectNames = await buildNameMap(getDB('projects')); } catch(e){}
   try { expenses=await queryDB(getDB('expenses'),undefined,[{property:'Date',direction:'descending'}]); } catch(e){}
 
-  const data = expenses.map(e => ({
+  const allData = expenses.map(e => ({
     desc: getTitle(e), amount: getNumber(e,'Amount')||0, date: getDate(e,'Date'),
     status: getSelect(e,'Status'), category: getSelect(e,'Category'), paidFrom: getSelect(e,'Paid From'),
     client: clientNames[getRelationId(e,'Client')] || '',
     project: projectNames[getRelationId(e,'Project')] || '',
   }));
+
+  // Filter by month
+  let data = allData;
+  let monthLabel = 'All Time';
+  if (selectedMonth) {
+    const [y,m] = selectedMonth.split('-').map(Number);
+    const lastDay = new Date(y, m, 0).getDate();
+    const start = selectedMonth + '-01';
+    const end = `${selectedMonth}-${String(lastDay).padStart(2,'0')}`;
+    data = allData.filter(e => e.date >= start && e.date <= end);
+    monthLabel = new Date(y, m-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  }
 
   const total = data.reduce((s,e)=>s+e.amount,0);
   const pendingReimb = data.filter(e=>e.status==='Pending Reimbursement');
@@ -37,7 +52,9 @@ export default async function ExpensesPage() {
       <ConstructionNav />
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">All Expenses</h2>
+          <div>
+            <h2 className="text-2xl font-bold text-white">Expenses{selectedMonth ? ` — ${monthLabel}` : ''}</h2>
+          </div>
           <div className="flex gap-3">
             <div className="rounded-lg px-4 py-2" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
               <span className="text-xs" style={{ color: '#64748b' }}>Total</span>
@@ -48,6 +65,11 @@ export default async function ExpensesPage() {
               <p className="text-lg font-bold text-red-400 font-mono">{fmt(totalPending)} <span className="text-xs font-normal" style={{ color: '#64748b' }}>DOP</span></p>
             </div>
           </div>
+        </div>
+
+        {/* Month Filter */}
+        <div className="mb-6">
+          <MonthFilter basePath="/expenses" selected={selectedMonth} />
         </div>
 
         <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
