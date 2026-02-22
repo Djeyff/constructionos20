@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDB } from '@/lib/config';
-import { queryDB } from '@/lib/notion';
+import { queryDB, getTitle } from '@/lib/notion';
 
 export async function GET() {
   const results = {};
@@ -9,16 +9,12 @@ export async function GET() {
     const id = getDB(key);
     if (!id) { results[key] = 'no db id'; continue; }
     try {
-      const rows = await queryDB(id, undefined, undefined, 1);
-      results[key] = `${rows.length} rows (has_data: ${rows.length > 0})`;
+      const rows = await queryDB(id, undefined, undefined, 2);
+      const sample = rows.length > 0 ? getTitle(rows[0]) : 'empty';
+      results[key] = `${rows.length} rows, sample: "${sample}"`;
     } catch(e) {
-      results[key] = `ERROR: ${e.message}`;
+      results[key] = `ERROR: ${e.message.slice(0,200)}`;
     }
   }
-  return NextResponse.json({
-    hasConfig: !!process.env.CONSTRUCTION_CONFIG,
-    hasNotion: !!process.env.NOTION_TOKEN,
-    notionPrefix: (process.env.NOTION_TOKEN||'').slice(0,10)+'...',
-    results,
-  });
+  return NextResponse.json({ results });
 }
