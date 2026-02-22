@@ -150,26 +150,30 @@ export default async function CalendarPage() {
           </div>
         ))}
 
-        {/* Upcoming Events */}
+        {/* Recent & Upcoming Events */}
         <div className="rounded-xl overflow-hidden mt-8" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <h3 className="text-lg font-semibold text-white">Upcoming Events</h3>
+            <h3 className="text-lg font-semibold text-white">Recent & Upcoming Activity</h3>
           </div>
           <div>
-            {events.filter(e => e.date >= todayStr).slice(0,20).map((ev, i) => (
-              <div key={i} className="px-6 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full" style={{
-                    background: ev.color==='gold'?'#d4a853':ev.color==='red'?'#f87171':ev.color==='green'?'#34d399':'#60a5fa'
-                  }}></div>
-                  <div>
-                    <p className="text-sm text-white">{ev.title}</p>
-                    <p className="text-xs" style={{ color: '#64748b' }}>{ev.date}</p>
+            {[...events].reverse().slice(0,30).map((ev, i) => {
+              const isFuture = ev.date >= todayStr;
+              const isToday = ev.date === todayStr;
+              return (
+                <div key={i} className="px-6 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', opacity: !isFuture && !isToday ? 0.6 : 1 }}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full" style={{
+                      background: ev.color==='gold'?'#d4a853':ev.color==='red'?'#f87171':ev.color==='green'?'#34d399':'#60a5fa'
+                    }}></div>
+                    <div>
+                      <p className="text-sm text-white">{ev.title}</p>
+                      <p className="text-xs" style={{ color: '#64748b' }}>{ev.date}{isToday ? ' · TODAY' : ''}</p>
+                    </div>
                   </div>
+                  <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.05)', color: '#94a3b8' }}>{ev.type}</span>
                 </div>
-                <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.05)', color: '#94a3b8' }}>{ev.type}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </main>
