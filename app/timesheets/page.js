@@ -1,11 +1,14 @@
 import { getDB } from '@/lib/config';
 import { queryDB, buildNameMap, getTitle, getNumber, getSelect, getDate, getRelationId } from '@/lib/notion';
 import ConstructionNav from '@/components/ConstructionNav';
+import WorkerFilter from '@/components/WorkerFilter';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TimesheetsPage() {
+export default async function TimesheetsPage({ searchParams }) {
   const fmt = (n) => { const a=Math.abs(n||0); return (n<0?'-':'')+a.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2}); };
+  const params = await searchParams;
+  const selectedWorker = params?.worker || null;
 
   let timesheets=[];
   let clientNames={}, peopleNames={}, projectNames={};
@@ -14,19 +17,50 @@ export default async function TimesheetsPage() {
   try { projectNames = await buildNameMap(getDB('projects')); } catch(e){}
   try { timesheets=await queryDB(getDB('timesheets'),undefined,[{property:'Date',direction:'descending'}]); } catch(e){}
 
-  const data = timesheets.map(t => ({
+  const allData = timesheets.map(t => ({
     task: getTitle(t), hours: getNumber(t,'Hours')||0, date: getDate(t,'Date'),
     status: getSelect(t,'Status'), empPay: getSelect(t,'Employee payment status'),
     amount: getNumber(t,'Amount')||getNumber(t,'Fixed Amount')||0,
+    workerId: getRelationId(t,'Employee'),
     worker: peopleNames[getRelationId(t,'Employee')] || '—',
     client: clientNames[getRelationId(t,'Client')] || '',
     project: projectNames[getRelationId(t,'Project')] || '',
   }));
 
+  // Build worker list with totals
+  const workerStats = {};
+  allData.forEach(t => {
+    const wk = t.worker;
+    if (!workerStats[wk]) workerStats[wk] = { id: t.workerId, hours: 0, amount: 0, unpaid: 0, count: 0 };
+    workerStats[wk].hours += t.hours;
+    workerStats[wk].amount += t.amount;
+    workerStats[wk].count++;
+    if (t.empPay === 'Not Paid') workerStats[wk].unpaid += t.amount;
+  });
+  const workerList = Object.entries(workerStats).sort((a,b) => b[1].unpaid - a[1].unpaid);
+
+  // Filter data
+  const data = selectedWorker ? allData.filter(t => t.workerId === selectedWorker) : allData;
+
   const totalHours = data.reduce((s,t)=>s+t.hours,0);
   const totalAmount = data.reduce((s,t)=>s+t.amount,0);
   const unpaid = data.filter(t=>t.empPay==='Not Paid');
   const totalUnpaid = unpaid.reduce((s,t)=>s+t.amount,0);
+
+  // Group by client for selected worker
+  const byClient = {};
+  if (selectedWorker) {
+    data.forEach(t => {
+      const c = t.client || 'Sin Cliente';
+      if (!byClient[c]) byClient[c] = { items: [], hours: 0, amount: 0, unpaid: 0 };
+      byClient[c].items.push(t);
+      byClient[c].hours += t.hours;
+      byClient[c].amount += t.amount;
+      if (t.empPay === 'Not Paid') byClient[c].unpaid += t.amount;
+    });
+  }
+
+  const selectedName = selectedWorker ? (Object.entries(workerStats).find(([_,v]) => v.id === selectedWorker)?.[0] || 'Worker') : null;
 
   const payColor = (s) => {
     if(s==='Paid') return 'bg-emerald-500/20 text-emerald-400';
@@ -44,20 +78,65 @@ export default async function TimesheetsPage() {
       <ConstructionNav />
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">Timesheets</h2>
+          <div>
+            <h2 className="text-2xl font-bold text-white">Timesheets</h2>
+            {selectedName && <p className="text-sm mt-1" style={{ color: '#d4a853' }}>Filtered: {selectedName}</p>}
+          </div>
           <div className="flex gap-3">
-            <Stat label="Total Hours" value={`${totalHours}h`} color="#d4a853" />
-            <Stat label="Total Amount" value={`${fmt(totalAmount)} DOP`} color="#fff" />
-            <Stat label="Unpaid" value={`${fmt(totalUnpaid)} DOP`} color="#f87171" />
+            <Stat label="Hours" value={`${totalHours}h`} color="#d4a853" />
+            <Stat label="Total" value={`${fmt(totalAmount)}`} color="#fff" />
+            <Stat label="Unpaid" value={`${fmt(totalUnpaid)}`} color="#f87171" />
           </div>
         </div>
 
+        {/* Worker Selector */}
+        <div className="rounded-xl p-4 mb-6" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-semibold text-white">👷 Filter by Worker</p>
+            {selectedWorker && <a href="/timesheets" className="text-xs px-3 py-1 rounded-lg" style={{ color: '#d4a853', background: 'rgba(212,168,83,0.1)' }}>Show All</a>}
+          </div>
+          <WorkerFilter workers={workerList.map(([name, s]) => ({ name, id: s.id, hours: s.hours, unpaid: s.unpaid, count: s.count }))} selected={selectedWorker} />
+        </div>
+
+        {/* Worker Summary — grouped by client (when filtered) */}
+        {selectedWorker && Object.keys(byClient).length > 0 && (
+          <div className="rounded-xl overflow-hidden mb-6" style={{ background: 'rgba(251,191,36,0.04)', border: '1px solid rgba(251,191,36,0.12)' }}>
+            <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(251,191,36,0.1)' }}>
+              <h3 className="text-lg font-semibold text-white">💰 {selectedName} — What You Owe</h3>
+              <span className="text-lg font-bold text-red-400 font-mono">{fmt(totalUnpaid)} DOP</span>
+            </div>
+            {Object.entries(byClient).sort((a,b) => b[1].unpaid - a[1].unpaid).map(([client, info]) => (
+              <div key={client}>
+                <div className="px-6 py-3 flex items-center justify-between" style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  <span className="text-sm font-bold text-white">🏢 {client}</span>
+                  <div className="flex gap-4 text-sm font-mono">
+                    <span style={{ color: '#d4a853' }}>{info.hours}h</span>
+                    <span className="text-white">{fmt(info.amount)} total</span>
+                    {info.unpaid > 0 && <span className="text-red-400 font-bold">{fmt(info.unpaid)} unpaid</span>}
+                  </div>
+                </div>
+                {info.items.filter(t=>t.empPay==='Not Paid').map((t,i) => (
+                  <div key={i} className="px-6 pl-10 py-1.5 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                    <p className="text-xs" style={{ color: '#94a3b8' }}>{t.date} · {t.task} · {t.hours}h</p>
+                    <span className={`text-xs font-mono ${t.amount > 0 ? 'text-red-400' : 'text-gray-600'}`}>{t.amount > 0 ? fmt(t.amount) : '—'}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+            <div className="px-6 py-3 flex items-center justify-between" style={{ background: 'rgba(212,168,83,0.06)', borderTop: '2px solid rgba(212,168,83,0.15)' }}>
+              <span className="text-sm font-bold" style={{ color: '#d4a853' }}>GRAND TOTAL OWED</span>
+              <span className="text-lg font-bold text-red-400 font-mono">{fmt(totalUnpaid)} DOP</span>
+            </div>
+          </div>
+        )}
+
+        {/* Table */}
         <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
-                  <TH>Date</TH><TH>Worker</TH><TH>Task</TH><TH>Client / Project</TH>
+                  <TH>Date</TH>{!selectedWorker && <TH>Worker</TH>}<TH>Task</TH><TH>Client / Project</TH>
                   <TH align="right">Hours</TH><TH>Client Status</TH><TH>Employee Pay</TH><TH align="right">Amount</TH>
                 </tr>
               </thead>
@@ -66,9 +145,7 @@ export default async function TimesheetsPage() {
                   <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
                     className={t.empPay==='Not Paid' ? 'bg-red-500/5' : ''}>
                     <td className="py-2.5 px-4 whitespace-nowrap" style={{ color: '#94a3b8' }}>{t.date||'—'}</td>
-                    <td className="py-2.5 px-4 whitespace-nowrap">
-                      <span className="text-sm font-semibold" style={{ color: '#d4a853' }}>{t.worker}</span>
-                    </td>
+                    {!selectedWorker && <td className="py-2.5 px-4 whitespace-nowrap"><span className="text-sm font-semibold" style={{ color: '#d4a853' }}>{t.worker}</span></td>}
                     <td className="py-2.5 px-4 text-white font-medium max-w-xs truncate">{t.task}</td>
                     <td className="py-2.5 px-4">
                       {t.client && <span className="text-xs font-medium text-white">{t.client}</span>}
@@ -92,7 +169,6 @@ export default async function TimesheetsPage() {
 function TH({ children, align }) {
   return <th className={`${align==='right'?'text-right':'text-left'} py-3 px-4 text-xs font-semibold uppercase tracking-wider`} style={{ color: '#64748b' }}>{children}</th>;
 }
-
 function Stat({ label, value, color }) {
   return (
     <div className="rounded-lg px-4 py-2" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
