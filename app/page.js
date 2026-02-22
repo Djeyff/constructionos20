@@ -387,8 +387,8 @@ export default async function ConstructionDashboard({ searchParams }) {
                     </div>
                   </div>
                   <div className="flex gap-4 text-xs" style={{ color: '#94a3b8' }}>
-                    <span>They owe: <span className="text-emerald-400 font-mono">{fmt(data.totalDebit)}</span></span>
-                    <span>You owe: <span className="text-red-400 font-mono">{fmt(data.totalCredit)}</span></span>
+                    <span>They owe: <span className="text-red-400 font-mono font-semibold">{fmt(data.totalDebit)}</span></span>
+                    <span>You owe: <span className="text-white font-mono">{fmt(data.totalCredit)}</span></span>
                     <span>{data.entries.length} entries</span>
                   </div>
                 </div>

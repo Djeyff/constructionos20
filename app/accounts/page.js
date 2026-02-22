@@ -56,8 +56,8 @@ export default async function AccountsPage() {
                 <div>
                   <h3 className="text-lg font-bold text-white">👤 {person}</h3>
                   <div className="flex gap-4 text-xs mt-1" style={{ color: '#94a3b8' }}>
-                    <span>They owe you: <span className="text-emerald-400 font-mono font-semibold">{fmt(info.totalDebit)}</span></span>
-                    <span>You owe them: <span className="text-red-400 font-mono font-semibold">{fmt(info.totalCredit)}</span></span>
+                    <span>They owe you: <span className="text-red-400 font-mono font-semibold">{fmt(info.totalDebit)}</span></span>
+                    <span>You owe them: <span className="text-white font-mono font-semibold">{fmt(info.totalCredit)}</span></span>
                   </div>
                 </div>
                 <div className="text-right">
@@ -83,8 +83,8 @@ export default async function AccountsPage() {
                         <td className="py-2.5 px-4 whitespace-nowrap" style={{ color: '#94a3b8' }}>{e.date||'—'}</td>
                         <td className="py-2.5 px-4 text-white font-medium">{e.desc}{e.notes && <span className="text-xs ml-2" style={{ color: '#64748b' }}>({e.notes})</span>}</td>
                         <td className="py-2.5 px-4"><span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" style={{ background: 'rgba(212,168,83,0.1)', color: '#d4a853' }}>{e.method}</span></td>
-                        <td className="py-2.5 px-4 text-right font-mono text-emerald-400">{e.debit > 0 ? fmt(e.debit) : ''}</td>
-                        <td className="py-2.5 px-4 text-right font-mono text-red-400">{e.credit > 0 ? fmt(e.credit) : ''}</td>
+                        <td className="py-2.5 px-4 text-right font-mono text-red-400">{e.debit > 0 ? fmt(e.debit) : ''}</td>
+                        <td className="py-2.5 px-4 text-right font-mono text-white">{e.credit > 0 ? fmt(e.credit) : ''}</td>
                         <td className={`py-2.5 px-4 text-right font-mono font-semibold ${e.balance>0?'text-emerald-400':'text-red-400'}`}>
                           {e.balance>0?'+':''}{fmt(e.balance)}
                         </td>
@@ -94,8 +94,8 @@ export default async function AccountsPage() {
                   <tfoot>
                     <tr style={{ background: 'rgba(212,168,83,0.05)', borderTop: '2px solid rgba(212,168,83,0.15)' }}>
                       <td colSpan={3} className="py-3 px-4 text-right text-sm font-bold" style={{ color: '#d4a853' }}>Balance</td>
-                      <td className="py-3 px-4 text-right font-mono font-bold text-emerald-400">{fmt(info.totalDebit)}</td>
-                      <td className="py-3 px-4 text-right font-mono font-bold text-red-400">{fmt(info.totalCredit)}</td>
+                      <td className="py-3 px-4 text-right font-mono font-bold text-red-400">{fmt(info.totalDebit)}</td>
+                      <td className="py-3 px-4 text-right font-mono font-bold text-white">{fmt(info.totalCredit)}</td>
                       <td className={`py-3 px-4 text-right font-mono font-bold ${net>0?'text-emerald-400':'text-red-400'}`}>
                         {net>0?'+':''}{fmt(net)} DOP
                       </td>
