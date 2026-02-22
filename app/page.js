@@ -2,6 +2,7 @@ import { getDB } from '@/lib/config';
 import { queryDB, buildNameMap, getTitle, getNumber, getSelect, getDate, getText, getRelationId } from '@/lib/notion';
 import ConstructionNav from '@/components/ConstructionNav';
 import MonthFilter from '@/components/MonthFilter';
+import TodoistWidget from '@/components/TodoistWidget';
 
 export const dynamic = 'force-dynamic';
 
@@ -290,6 +291,17 @@ export default async function ConstructionDashboard({ searchParams }) {
                 );
               })}
             </div>
+          </div>
+        </div>
+
+        {/* Todoist Tasks */}
+        <div className="rounded-xl overflow-hidden mb-8" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <h3 className="text-lg font-semibold text-white">✅ Tasks</h3>
+            <a href="/tasks" className="text-xs" style={{ color: '#d4a853' }}>View all →</a>
+          </div>
+          <div className="px-6 py-3">
+            <TodoistWidget compact={true} />
           </div>
         </div>
 
