@@ -382,7 +382,7 @@ export default async function ConstructionDashboard({ searchParams }) {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-bold text-white">👤 {person}</span>
                     <div className="text-right">
-                      <span className={`text-lg font-bold font-mono ${net>0?'text-emerald-400':'text-red-400'}`}>{net>0?'+':''}{fmt(net)} DOP</span>
+                      <span className={`text-lg font-bold font-mono ${net>0?'text-red-400':'text-white'}`}>{net>0?'+':''}{fmt(net)} DOP</span>
                       <p className="text-xs" style={{ color: '#64748b' }}>{net>0?`${person} owes you`:`You owe ${person}`}</p>
                     </div>
                   </div>

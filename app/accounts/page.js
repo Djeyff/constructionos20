@@ -37,11 +37,11 @@ export default async function AccountsPage() {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white">Personal Accounts</h2>
           <div className="rounded-lg px-5 py-3" style={{
-            background: grandNet > 0 ? 'rgba(52,211,153,0.08)' : 'rgba(248,113,113,0.08)',
-            border: `1px solid ${grandNet > 0 ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}`,
+            background: grandNet > 0 ? 'rgba(248,113,113,0.08)' : 'rgba(255,255,255,0.06)',
+            border: `1px solid ${grandNet > 0 ? 'rgba(248,113,113,0.2)' : 'rgba(255,255,255,0.1)'}`,
           }}>
             <span className="text-xs uppercase tracking-wide" style={{ color: '#64748b' }}>Net Balance</span>
-            <p className={`text-2xl font-bold font-mono ${grandNet>0?'text-emerald-400':'text-red-400'}`}>
+            <p className={`text-2xl font-bold font-mono ${grandNet>0?'text-red-400':'text-white'}`}>
               {grandNet>0?'+':''}{fmt(grandNet)} <span className="text-sm">DOP</span>
             </p>
           </div>
@@ -61,7 +61,7 @@ export default async function AccountsPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className={`text-xl font-bold font-mono ${net>0?'text-emerald-400':'text-red-400'}`}>
+                  <p className={`text-xl font-bold font-mono ${net>0?'text-red-400':'text-white'}`}>
                     {net>0?'+':''}{fmt(net)} DOP
                   </p>
                   <p className="text-xs" style={{ color: '#64748b' }}>{net>0?`${person} owes you`:`You owe ${person}`}</p>
@@ -85,7 +85,7 @@ export default async function AccountsPage() {
                         <td className="py-2.5 px-4"><span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" style={{ background: 'rgba(212,168,83,0.1)', color: '#d4a853' }}>{e.method}</span></td>
                         <td className="py-2.5 px-4 text-right font-mono text-red-400">{e.debit > 0 ? fmt(e.debit) : ''}</td>
                         <td className="py-2.5 px-4 text-right font-mono text-white">{e.credit > 0 ? fmt(e.credit) : ''}</td>
-                        <td className={`py-2.5 px-4 text-right font-mono font-semibold ${e.balance>0?'text-emerald-400':'text-red-400'}`}>
+                        <td className={`py-2.5 px-4 text-right font-mono font-semibold ${e.balance>0?'text-red-400':'text-white'}`}>
                           {e.balance>0?'+':''}{fmt(e.balance)}
                         </td>
                       </tr>
@@ -96,7 +96,7 @@ export default async function AccountsPage() {
                       <td colSpan={3} className="py-3 px-4 text-right text-sm font-bold" style={{ color: '#d4a853' }}>Balance</td>
                       <td className="py-3 px-4 text-right font-mono font-bold text-red-400">{fmt(info.totalDebit)}</td>
                       <td className="py-3 px-4 text-right font-mono font-bold text-white">{fmt(info.totalCredit)}</td>
-                      <td className={`py-3 px-4 text-right font-mono font-bold ${net>0?'text-emerald-400':'text-red-400'}`}>
+                      <td className={`py-3 px-4 text-right font-mono font-bold ${net>0?'text-red-400':'text-white'}`}>
                         {net>0?'+':''}{fmt(net)} DOP
                       </td>
                     </tr>
