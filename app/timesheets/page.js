@@ -1,6 +1,7 @@
 import { getDB } from '@/lib/config';
 import { queryDB, buildNameMap, getTitle, getNumber, getSelect, getDate, getRelationId } from '@/lib/notion';
 import ConstructionNav from '@/components/ConstructionNav';
+import AddEntryModal from '@/components/AddEntryModal';
 import WorkerFilter from '@/components/WorkerFilter';
 
 export const dynamic = 'force-dynamic';
@@ -79,7 +80,10 @@ export default async function TimesheetsPage({ searchParams }) {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
+            <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-white">Timesheets</h2>
+            <AddEntryModal defaultType="timesheet" triggerLabel="+ Add Timesheet" />
+          </div>
             {selectedName && <p className="text-sm mt-1" style={{ color: '#d4a853' }}>Filtered: {selectedName}</p>}
           </div>
           <div className="flex gap-3">

@@ -1,6 +1,7 @@
 import { getDB } from '@/lib/config';
 import { queryDB, buildNameMap, getTitle, getNumber, getSelect, getDate, getRelationId } from '@/lib/notion';
 import ConstructionNav from '@/components/ConstructionNav';
+import AddEntryModal from '@/components/AddEntryModal';
 import MonthFilter from '@/components/MonthFilter';
 
 export const dynamic = 'force-dynamic';

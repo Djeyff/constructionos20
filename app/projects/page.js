@@ -1,6 +1,7 @@
 import { getDB } from '@/lib/config';
 import { queryDB, getTitle, getNumber, getSelect, getDate } from '@/lib/notion';
 import ConstructionNav from '@/components/ConstructionNav';
+import AddEntryModal from '@/components/AddEntryModal';
 
 export const dynamic = 'force-dynamic';
 
@@ -118,7 +119,10 @@ export default async function ProjectsPage() {
           </>
         )}
 
-        <h2 className="text-2xl font-bold text-white mb-6">Projects</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-white">Projects</h2>
+          <AddEntryModal defaultType="project" triggerLabel="+ Add Project" />
+        </div>
 
         {/* Project Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">

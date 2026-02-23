@@ -1,6 +1,7 @@
 import { getDB } from '@/lib/config';
 import { queryDB, buildNameMap, getTitle, getText, getNumber, getSelect, getDate, getRelationId } from '@/lib/notion';
 import ConstructionNav from '@/components/ConstructionNav';
+import AddEntryModal from '@/components/AddEntryModal';
 
 export const dynamic = 'force-dynamic';
 
@@ -94,6 +95,7 @@ export default async function ClientsPage() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white">Clients — Pending Reimbursements</h2>
+            <AddEntryModal defaultType="client" triggerLabel="+ Add Client" />
           <div className="rounded-lg px-5 py-3" style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)' }}>
             <span className="text-xs text-red-400 uppercase tracking-wide">Total Owed</span>
             <p className="text-2xl font-bold text-red-400 font-mono">{fmt(grandTotal)} <span className="text-sm">DOP</span></p>

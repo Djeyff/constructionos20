@@ -1,6 +1,7 @@
 import { getDB } from '@/lib/config';
 import { queryDB, getTitle, getNumber, getSelect, getDate, getText } from '@/lib/notion';
 import ConstructionNav from '@/components/ConstructionNav';
+import AddEntryModal from '@/components/AddEntryModal';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,7 +36,10 @@ export default async function AccountsPage() {
       <ConstructionNav />
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">Personal Accounts</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-white">Personal Accounts</h2>
+            <AddEntryModal defaultType="person" triggerLabel="+ Add Person" />
+          </div>
           <div className="rounded-lg px-5 py-3" style={{
             background: grandNet > 0 ? 'rgba(248,113,113,0.08)' : 'rgba(255,255,255,0.06)',
             border: `1px solid ${grandNet > 0 ? 'rgba(248,113,113,0.2)' : 'rgba(255,255,255,0.1)'}`,
