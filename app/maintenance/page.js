@@ -22,11 +22,22 @@ export default async function MaintenancePage() {
     km: getNumber(c,'Odómetro (km)')||0, nextKm: getNumber(c,'Próximo km')||0,
     aceite: getSelect(c,'Aceite motor'), filtroAire: getSelect(c,'Filtro Aire'), filtroAceite: getSelect(c,'Filtro Aceite'),
     frenos: getSelect(c,'Frenos'), llantas: getSelect(c,'Llantas'),
+    nivelAceite: getSelect(c,'Nivel Aceite'), colorAceite: getSelect(c,'Color Aceite'),
+    refrigerante: getSelect(c,'Refrigerante'), aspectoGeneral: getSelect(c,'Aspecto General'),
     nextDate: getDate(c,'Próxima Revisión'), obs: getText(c,'Observaciones'),
   }));
 
   const latestCam = camData[0];
   const kmRemaining = latestCam ? latestCam.nextKm - latestCam.km : 0;
+
+  // Next Saturday calculation
+  const nextSaturday = (() => {
+    const d = new Date();
+    const day = d.getDay(); // 0=Sun, 6=Sat
+    const daysUntilSat = day === 6 ? 7 : (6 - day);
+    d.setDate(d.getDate() + daysUntilSat);
+    return d.toISOString().slice(0,10);
+  })();
 
   const statusIcon = (val) => {
     if(!val) return '—';
@@ -53,17 +64,25 @@ export default async function MaintenancePage() {
                 {kmRemaining <= 0 ? 'SERVICE OVERDUE' : `${fmt(kmRemaining)} km to service`}
               </span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 mb-3">
               <Stat label="Odometer" value={`${fmt(latestCam.km)} km`} />
               <Stat label="Next Service" value={`${fmt(latestCam.nextKm)} km`} />
-              <Stat label="Aceite" value={statusIcon(latestCam.aceite)} />
+              <Stat label="Aceite motor" value={statusIcon(latestCam.aceite)} />
+              <Stat label="Nivel Aceite" value={statusIcon(latestCam.nivelAceite) || '—'} />
+              <Stat label="Color Aceite" value={statusIcon(latestCam.colorAceite) || '—'} />
+              <Stat label="Refrigerante" value={statusIcon(latestCam.refrigerante) || '—'} />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <Stat label="Filtro Aire" value={statusIcon(latestCam.filtroAire)} />
               <Stat label="Filtro Aceite" value={statusIcon(latestCam.filtroAceite)} />
               <Stat label="Frenos" value={statusIcon(latestCam.frenos)} />
               <Stat label="Llantas" value={statusIcon(latestCam.llantas)} />
             </div>
             {latestCam.obs && <p className="text-xs mt-3" style={{ color: '#94a3b8' }}>📝 {latestCam.obs}</p>}
-            <p className="text-xs mt-2" style={{ color: '#64748b' }}>Last check: {latestCam.date} · Next: {latestCam.nextDate||'—'}</p>
+            <p className="text-xs mt-3" style={{ color: '#64748b' }}>
+              Last check: {latestCam.date} · 
+              <span style={{ color: '#d4a853' }}> 📅 Next check-up: {nextSaturday} (Saturday)</span>
+            </p>
           </div>
         )}
 
