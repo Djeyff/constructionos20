@@ -3,6 +3,7 @@ import { queryDB, buildNameMap, getTitle, getNumber, getSelect, getDate, getText
 import ConstructionNav from '@/components/ConstructionNav';
 import MonthFilter from '@/components/MonthFilter';
 import TodoistWidget from '@/components/TodoistWidget';
+import AddEntryModal from '@/components/AddEntryModal';
 
 export const dynamic = 'force-dynamic';
 
@@ -152,6 +153,7 @@ export default async function ConstructionDashboard({ searchParams }) {
               {selectedMonth ? monthLabel : new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}
             </p>
           </div>
+          <AddEntryModal triggerLabel="+ Add Entry" />
         </div>
 
         {/* Month Filter */}

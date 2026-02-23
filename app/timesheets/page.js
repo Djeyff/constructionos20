@@ -80,16 +80,14 @@ export default async function TimesheetsPage({ searchParams }) {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-white">Timesheets</h2>
-            <AddEntryModal defaultType="timesheet" triggerLabel="+ Add Timesheet" />
-          </div>
             {selectedName && <p className="text-sm mt-1" style={{ color: '#d4a853' }}>Filtered: {selectedName}</p>}
           </div>
-          <div className="flex gap-3">
+          <div className="flex items-center gap-3">
             <Stat label="Hours" value={`${totalHours}h`} color="#d4a853" />
             <Stat label="Total" value={`${fmt(totalAmount)}`} color="#fff" />
             <Stat label="Unpaid" value={`${fmt(totalUnpaid)}`} color="#f87171" />
+            <AddEntryModal defaultType="timesheet" triggerLabel="+ Add Timesheet" />
           </div>
         </div>
 

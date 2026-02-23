@@ -65,6 +65,7 @@ export default async function ExpensesPage({ searchParams }) {
               <span className="text-xs text-red-400">Pending Reimbursement</span>
               <p className="text-lg font-bold text-red-400 font-mono">{fmt(totalPending)} <span className="text-xs font-normal" style={{ color: '#64748b' }}>DOP</span></p>
             </div>
+            <AddEntryModal defaultType="expense" triggerLabel="+ Add Expense" />
           </div>
         </div>
 
