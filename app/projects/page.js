@@ -55,6 +55,69 @@ export default async function ProjectsPage() {
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0f1a2e 0%, #141f35 100%)' }}>
       <ConstructionNav />
       <main className="max-w-7xl mx-auto px-4 py-8">
+        {/* Todo Costo — FIRST */}
+        {todoData.length > 0 && (
+          <>
+            <h2 className="text-2xl font-bold text-white mb-4">💼 A Todo Costo</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+              {todoData.map((t,i) => {
+                const spent = t.budget - Math.max(0,t.pending);
+                const pct = t.budget > 0 ? Math.round((spent/t.budget)*100) : 0;
+                return (
+                  <div key={i} className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,168,83,0.2)' }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-base font-bold text-white">{t.name}</h3>
+                      <span className="text-xs" style={{ color: '#64748b' }}>{t.status} · {t.start||''}</span>
+                    </div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="flex-1 rounded-full h-2.5" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                        <div className={`h-2.5 rounded-full ${pct>=90?'bg-red-400':pct>=70?'bg-yellow-400':'bg-emerald-400'}`}
+                          style={{ width: `${Math.min(pct,100)}%` }}></div>
+                      </div>
+                      <span className="text-sm font-bold" style={{ color: '#d4a853' }}>{pct}%</span>
+                    </div>
+                    <div className="flex justify-between text-xs mb-3" style={{ color: '#94a3b8' }}>
+                      <span>Spent: {fmt(spent)} DOP</span>
+                      <span>Budget: {fmt(t.budget)} DOP</span>
+                      <span className={t.pending > 0 ? 'text-red-400 font-semibold' : 'text-emerald-400'}>
+                        Pending: {fmt(Math.max(0,t.pending))} DOP
+                      </span>
+                    </div>
+                    {/* Advances detail */}
+                    {t.advances.length > 0 && (
+                      <div className="mt-1 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                        <p className="text-xs font-semibold mb-2" style={{ color: '#94a3b8' }}>AVANCES</p>
+                        {t.advances.map((a,j) => (
+                          <div key={j} className="flex items-center justify-between py-1.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                            <div className="flex items-center gap-2">
+                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold ${a.paidBy==='Jeff'?'bg-blue-900/50 text-blue-300':a.paidBy==='Cliente'?'bg-emerald-900/50 text-emerald-300':'bg-gray-700 text-gray-300'}`}>
+                                {a.paidBy==='Jeff'?'👤 Jeff':a.paidBy==='Cliente'?'✅ Cliente':a.paidBy}
+                              </span>
+                              <span className="text-xs text-white">{a.desc}</span>
+                              {a.date && <span className="text-xs" style={{ color: '#64748b' }}>{a.date}</span>}
+                            </div>
+                            <span className="text-xs font-mono font-semibold" style={{ color: a.paidBy==='Jeff'?'#f87171':'#6ee7b7' }}>
+                              {fmt(a.amount)} DOP
+                            </span>
+                          </div>
+                        ))}
+                        {t.advances.filter(a=>a.paidBy==='Jeff').length > 0 && (
+                          <div className="flex justify-between mt-2 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                            <span className="text-xs font-semibold" style={{ color: '#f87171' }}>⚠️ Client owes Jeff</span>
+                            <span className="text-xs font-mono font-bold" style={{ color: '#f87171' }}>
+                              {fmt(t.advances.filter(a=>a.paidBy==='Jeff').reduce((s,a)=>s+a.amount,0))} DOP
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
         <h2 className="text-2xl font-bold text-white mb-6">Projects</h2>
 
         {/* Project Cards */}
@@ -91,68 +154,6 @@ export default async function ProjectsPage() {
           ))}
         </div>
 
-        {/* Todo Costo */}
-        {todoData.length > 0 && (
-          <>
-            <h2 className="text-xl font-bold text-white mb-4">A Todo Costo</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {todoData.map((t,i) => {
-                const spent = t.budget - Math.max(0,t.pending);
-                const pct = t.budget > 0 ? Math.round((spent/t.budget)*100) : 0;
-                return (
-                  <div key={i} className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-base font-bold text-white">{t.name}</h3>
-                      <span className="text-xs" style={{ color: '#64748b' }}>{t.status} · {t.start||''}</span>
-                    </div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="flex-1 rounded-full h-2.5" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                        <div className={`h-2.5 rounded-full ${pct>=90?'bg-red-400':pct>=70?'bg-yellow-400':'bg-emerald-400'}`}
-                          style={{ width: `${Math.min(pct,100)}%` }}></div>
-                      </div>
-                      <span className="text-sm font-bold" style={{ color: '#d4a853' }}>{pct}%</span>
-                    </div>
-                    <div className="flex justify-between text-xs" style={{ color: '#94a3b8' }}>
-                      <span>Spent: {fmt(spent)} DOP</span>
-                      <span>Budget: {fmt(t.budget)} DOP</span>
-                      <span className={t.pending > 0 ? 'text-red-400 font-semibold' : 'text-emerald-400'}>
-                        Pending: {fmt(Math.max(0,t.pending))} DOP
-                      </span>
-                    </div>
-                    {/* Advances detail */}
-                    {t.advances.length > 0 && (
-                      <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                        <p className="text-xs font-semibold mb-2" style={{ color: '#94a3b8' }}>AVANCES</p>
-                        {t.advances.map((a,j) => (
-                          <div key={j} className="flex items-center justify-between py-1.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                            <div className="flex items-center gap-2">
-                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold ${a.paidBy==='Jeff'?'bg-blue-900/50 text-blue-300':a.paidBy==='Cliente'?'bg-emerald-900/50 text-emerald-300':'bg-gray-700 text-gray-300'}`}>
-                                {a.paidBy==='Jeff'?'👤 Jeff':a.paidBy==='Cliente'?'✅ Cliente':a.paidBy}
-                              </span>
-                              <span className="text-xs text-white">{a.desc}</span>
-                              {a.date && <span className="text-xs" style={{ color: '#64748b' }}>{a.date}</span>}
-                            </div>
-                            <span className="text-xs font-mono font-semibold" style={{ color: a.paidBy==='Jeff'?'#f87171':'#6ee7b7' }}>
-                              {fmt(a.amount)} DOP
-                            </span>
-                          </div>
-                        ))}
-                        {t.advances.filter(a=>a.paidBy==='Jeff').length > 0 && (
-                          <div className="flex justify-between mt-2 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                            <span className="text-xs font-semibold" style={{ color: '#f87171' }}>⚠️ Client owes Jeff</span>
-                            <span className="text-xs font-mono font-bold" style={{ color: '#f87171' }}>
-                              {fmt(t.advances.filter(a=>a.paidBy==='Jeff').reduce((s,a)=>s+a.amount,0))} DOP
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
       </main>
     </div>
   );
