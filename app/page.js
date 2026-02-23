@@ -165,7 +165,7 @@ export default async function ConstructionDashboard({ searchParams }) {
           <KPI icon="👷" label="Unpaid Workers" value={`${fmt(totalPendingTsPay)} DOP`} color="red" sub={`${pendingTsPay.length} timesheets`} />
           <KPI icon="📊" label={`${monthLabel} Expenses`} value={`${fmt(totalMonthExp)} DOP`} color="blue" sub={`${monthExp.length} entries`} />
           <KPI icon="⏱️" label={`${monthLabel} Hours`} value={`${monthHours}h`} color="gold" sub={`${monthTs.length} entries`} />
-          <KPI icon="🏗️" label="Active Projects" value={activeProjects.length} color="green" sub={`${projectData.length} total`} />
+          <KPI icon="🏗️" label="Active Projects" value={projectData.filter(p=>['Active','On Site','Mobilizing'].includes(p.status)).length} color="green" sub={`${projectData.length} total`} />
         </div>
 
         {/* KPIs Row 2 */}
