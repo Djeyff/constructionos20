@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export default async function ClientsPage() {
   const fmt = (n) => { const a=Math.abs(n||0); return (n<0?'-':'')+a.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2}); };
 
-  let clients=[], expenses=[], timesheets=[];
+  let clients=[], expenses=[], timesheets=[], tcProjects=[], tcAdvances=[];
   let clientNames={}, peopleNames={}, projectNames={};
   try { clientNames = await buildNameMap(getDB('clients')); } catch(e){}
   try { peopleNames = await buildNameMap(getDB('people')); } catch(e){}
@@ -15,6 +15,17 @@ export default async function ClientsPage() {
   try { clients=await queryDB(getDB('clients')); } catch(e){}
   try { expenses=await queryDB(getDB('expenses'),{property:'Status',select:{equals:'Pending Reimbursement'}}); } catch(e){}
   try { timesheets=await queryDB(getDB('timesheets'),{property:'Status',select:{equals:'Pending Reimbursement'}}); } catch(e){}
+  try { tcProjects=await queryDB(getDB('todoCosto')); } catch(e){}
+  try { tcAdvances=await queryDB(getDB('todoCostoAvances'),{property:'Pagado por',select:{equals:'Jeff'}}); } catch(e){}
+
+  // Build TC project map: id → { name, clientId, status }
+  const tcProjectMap = {};
+  tcProjects.forEach(p => {
+    const cid = getRelationId(p,'Cliente');
+    const status = getSelect(p,'Estado')||'';
+    if (status === 'Pagado') return; // skip closed projects
+    tcProjectMap[p.id] = { name: getTitle(p), clientName: clientNames[cid]||'Sin Cliente' };
+  });
 
   const clientData = clients.map(c => ({
     id: c.id, name: getTitle(c), phone: getText(c,'Phone')||'', email: getText(c,'Email')||'',
@@ -46,6 +57,22 @@ export default async function ClientsPage() {
       desc: getTitle(t), amount, date: getDate(t,'Date'),
       worker: peopleNames[getRelationId(t,'Employee')] || '',
       hours: getNumber(t,'Hours')||0, type: 'timesheet',
+    });
+  });
+
+  // Inject Todo Costo advances (paid by Jeff) into clientDebt
+  tcAdvances.forEach(a => {
+    const projId = getRelationId(a,'Todo Costo');
+    const tc = tcProjectMap[projId];
+    if (!tc) return;
+    const client = tc.clientName;
+    const project = tc.name;
+    const amount = getNumber(a,'Monto')||0;
+    if (!clientDebt[client]) clientDebt[client] = {};
+    if (!clientDebt[client][project]) clientDebt[client][project] = [];
+    clientDebt[client][project].push({
+      desc: getTitle(a), amount, date: getDate(a,'Fecha'),
+      paidBy: getSelect(a,'Pagado por')||'Jeff', type: 'advance',
     });
   });
 
@@ -106,8 +133,10 @@ export default async function ClientsPage() {
                 const projTotal = items.reduce((s,e)=>s+e.amount,0);
                 const tsItems = items.filter(e=>e.type==='timesheet');
                 const expItems = items.filter(e=>e.type==='expense');
+                const advItems = items.filter(e=>e.type==='advance');
                 const tsTotal = tsItems.reduce((s,e)=>s+e.amount,0);
                 const expTotal = expItems.reduce((s,e)=>s+e.amount,0);
+                const advTotal = advItems.reduce((s,e)=>s+e.amount,0);
                 return (
                   <div key={project}>
                     <div className="px-6 py-3 flex items-center justify-between" style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
@@ -141,6 +170,24 @@ export default async function ClientsPage() {
                               {e.desc} · {e.date} · <span style={{ color: '#d4a853' }}>{e.category}</span>
                             </p>
                             <span className={`text-xs font-mono ${e.amount > 0 ? 'text-white' : 'text-gray-600'}`}>{e.amount > 0 ? fmt(e.amount) : '—'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* A Todo Costo Advances */}
+                    {advItems.length > 0 && (
+                      <div className="px-6 pl-10 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                        <p className="text-xs font-semibold mb-1" style={{ color: '#64748b' }}>🔨 A Todo Costo — Avances ({fmt(advTotal)} DOP)</p>
+                        {advItems.map((a,i) => (
+                          <div key={i} className="flex items-center justify-between py-1">
+                            <p className="text-xs" style={{ color: '#94a3b8' }}>
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-blue-900/50 text-blue-300 mr-2">
+                                👤 {a.paidBy}
+                              </span>
+                              {a.desc} · {a.date}
+                            </p>
+                            <span className="text-xs font-mono text-red-400 font-semibold">{fmt(a.amount)}</span>
                           </div>
                         ))}
                       </div>
