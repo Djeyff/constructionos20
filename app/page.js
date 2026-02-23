@@ -74,7 +74,6 @@ export default async function ConstructionDashboard({ searchParams }) {
     name: getTitle(p), status: getSelect(p,'Status'), progress: getNumber(p,'Progress %')||0,
     budget: getNumber(p,'Estimated Budget')||0,
   }));
-  const activeProjects = projectData.filter(p=>['Active','On Site','Mobilizing'].includes(p.status));
 
   const todoData = todoCosto.map(t => ({
     name: getTitle(t), budget: getNumber(t,'Presupuesto Total')||0,
@@ -240,57 +239,34 @@ export default async function ConstructionDashboard({ searchParams }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Active Projects */}
-          <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <h3 className="text-lg font-semibold text-white">Active Projects</h3>
-              <a href="/projects" className="text-xs" style={{ color: '#d4a853' }}>View all →</a>
-            </div>
-            <div>
-              {activeProjects.map((p,i) => (
-                <div key={i} className="px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-semibold text-white">{p.name}</p>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">{p.status}</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1"><div className="w-full rounded-full h-2" style={{ background: 'rgba(255,255,255,0.08)' }}><div className="h-2 rounded-full bg-emerald-400" style={{ width: `${Math.min(p.progress,100)}%` }}></div></div></div>
-                    <span className="text-xs font-mono" style={{ color: '#d4a853' }}>{p.progress}%</span>
-                  </div>
-                </div>
-              ))}
-              {activeProjects.length===0 && <p className="px-6 py-8 text-center text-sm" style={{ color: '#64748b' }}>No active projects.</p>}
-            </div>
+        {/* Todo Costo — full width */}
+        <div className="rounded-xl overflow-hidden mb-8" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,168,83,0.2)' }}>
+          <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <h3 className="text-lg font-semibold text-white">💼 A Todo Costo</h3>
+            <a href="/projects" className="text-xs" style={{ color: '#d4a853' }}>View all →</a>
           </div>
-
-          {/* Todo Costo */}
-          <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <h3 className="text-lg font-semibold text-white">A Todo Costo</h3>
-            </div>
-            <div>
-              {todoData.map((t,i) => {
-                const spent = t.budget - Math.max(0,t.pending);
-                const pct = t.budget > 0 ? Math.round((spent/t.budget)*100) : 0;
-                return (
-                  <div key={i} className="px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm font-semibold text-white">{t.name}</p>
-                      <span className="text-xs font-mono" style={{ color: t.pending>0 ? '#d4a853' : '#6ee7b7' }}>
-                        {t.pending>0 ? `${fmt(t.pending)} pending` : '✓ Complete'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 rounded-full h-2" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                        <div className={`h-2 rounded-full ${pct>=90?'bg-red-400':pct>=70?'bg-yellow-400':'bg-emerald-400'}`} style={{ width: `${Math.min(pct,100)}%` }}></div>
-                      </div>
-                      <span className="text-xs" style={{ color: '#94a3b8' }}>{pct}% · {fmt(spent)}/{fmt(t.budget)}</span>
-                    </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {todoData.map((t,i) => {
+              const spent = t.budget - Math.max(0,t.pending);
+              const pct = t.budget > 0 ? Math.round((spent/t.budget)*100) : 0;
+              return (
+                <div key={i} className="px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', borderRight: '1px solid rgba(255,255,255,0.03)' }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-semibold text-white">{t.name}</p>
+                    <span className="text-xs font-mono" style={{ color: t.pending>0 ? '#f87171' : '#6ee7b7' }}>
+                      {t.pending>0 ? `${fmt(t.pending)} DOP` : '✓ Complete'}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
+                  <div className="flex items-center gap-3 mb-1">
+                    <div className="flex-1 rounded-full h-2" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                      <div className={`h-2 rounded-full ${pct>=90?'bg-red-400':pct>=70?'bg-yellow-400':'bg-emerald-400'}`} style={{ width: `${Math.min(pct,100)}%` }}></div>
+                    </div>
+                    <span className="text-xs font-bold" style={{ color: '#d4a853' }}>{pct}%</span>
+                  </div>
+                  <p className="text-xs" style={{ color: '#64748b' }}>{fmt(spent)} spent · {fmt(t.budget)} budget</p>
+                </div>
+              );
+            })}
           </div>
         </div>
 
