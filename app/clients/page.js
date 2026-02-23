@@ -24,7 +24,11 @@ export default async function ClientsPage() {
     const cid = getRelationId(p,'Cliente');
     const status = getSelect(p,'Estado')||'';
     if (status === 'Pagado') return; // skip closed projects
-    tcProjectMap[p.id] = { name: getTitle(p), clientName: clientNames[cid]||'Sin Cliente' };
+    const budget = getNumber(p,'Presupuesto Total')||0;
+    const pending = p.properties?.Pendiente?.formula?.number ?? null;
+    const spent = pending !== null ? budget - Math.max(0, pending) : 0;
+    const pct = budget > 0 ? Math.round((spent/budget)*100) : 0;
+    tcProjectMap[p.id] = { name: getTitle(p), clientName: clientNames[cid]||'Sin Cliente', budget, pending: pending||0, spent, pct };
   });
 
   const clientData = clients.map(c => ({
@@ -58,6 +62,12 @@ export default async function ClientsPage() {
       worker: peopleNames[getRelationId(t,'Employee')] || '',
       hours: getNumber(t,'Hours')||0, type: 'timesheet',
     });
+  });
+
+  // Build TC project summary map: "client::project" → {budget, pending, spent, pct}
+  const tcSummary = {};
+  Object.values(tcProjectMap).forEach(tc => {
+    tcSummary[`${tc.clientName}::${tc.name}`] = { budget: tc.budget, pending: tc.pending, spent: tc.spent, pct: tc.pct };
   });
 
   // Inject Todo Costo advances (paid by Jeff) into clientDebt
@@ -176,22 +186,52 @@ export default async function ClientsPage() {
                     )}
 
                     {/* A Todo Costo Advances */}
-                    {advItems.length > 0 && (
-                      <div className="px-6 pl-10 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                        <p className="text-xs font-semibold mb-1" style={{ color: '#64748b' }}>🔨 A Todo Costo — Avances ({fmt(advTotal)} DOP)</p>
-                        {advItems.map((a,i) => (
-                          <div key={i} className="flex items-center justify-between py-1">
-                            <p className="text-xs" style={{ color: '#94a3b8' }}>
-                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-blue-900/50 text-blue-300 mr-2">
-                                👤 {a.paidBy}
-                              </span>
-                              {a.desc} · {a.date}
-                            </p>
-                            <span className="text-xs font-mono text-red-400 font-semibold">{fmt(a.amount)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    {advItems.length > 0 && (() => {
+                      const tc = tcSummary[`${client}::${project}`] || {};
+                      return (
+                        <div className="px-6 pl-10 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', background: 'rgba(212,168,83,0.02)' }}>
+                          <p className="text-xs font-semibold mb-2" style={{ color: '#64748b' }}>🔨 A Todo Costo — Avances</p>
+                          {advItems.map((a,i) => (
+                            <div key={i} className="flex items-center justify-between py-1">
+                              <p className="text-xs" style={{ color: '#94a3b8' }}>
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-blue-900/50 text-blue-300 mr-2">
+                                  👤 {a.paidBy}
+                                </span>
+                                {a.desc} · {a.date}
+                              </p>
+                              <span className="text-xs font-mono text-red-400 font-semibold">{fmt(a.amount)}</span>
+                            </div>
+                          ))}
+                          {/* Project totals */}
+                          {tc.budget > 0 && (
+                            <div className="mt-3 pt-2 grid grid-cols-3 gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                              <div className="text-center">
+                                <p className="text-xs" style={{ color: '#64748b' }}>Budget</p>
+                                <p className="text-sm font-mono font-semibold text-white">{fmt(tc.budget)}</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-xs" style={{ color: '#64748b' }}>Spent</p>
+                                <p className="text-sm font-mono font-semibold" style={{ color: '#d4a853' }}>{fmt(tc.spent)}</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-xs" style={{ color: '#64748b' }}>Pendiente</p>
+                                <p className={`text-sm font-mono font-bold ${tc.pending > 0 ? 'text-red-400' : 'text-emerald-400'}`}>{fmt(tc.pending)}</p>
+                              </div>
+                            </div>
+                          )}
+                          {tc.budget > 0 && (
+                            <div className="mt-2">
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 rounded-full h-1.5" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                                  <div className={`h-1.5 rounded-full ${tc.pct>=90?'bg-red-400':tc.pct>=70?'bg-yellow-400':'bg-emerald-400'}`} style={{ width: `${Math.min(tc.pct,100)}%` }}></div>
+                                </div>
+                                <span className="text-xs font-bold" style={{ color: '#d4a853' }}>{tc.pct}%</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 );
               })}
