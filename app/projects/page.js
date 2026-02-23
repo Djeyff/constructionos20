@@ -7,9 +7,10 @@ export const dynamic = 'force-dynamic';
 export default async function ProjectsPage() {
   const fmt = (n) => { const a=Math.abs(n||0); return (n<0?'-':'')+a.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2}); };
 
-  let projects=[], todoCosto=[];
+  let projects=[], todoCosto=[], todoCostoAvances=[];
   try { const db=getDB('projects'); if(db) projects=await queryDB(db); } catch(e){}
   try { const db=getDB('todoCosto'); if(db) todoCosto=await queryDB(db); } catch(e){}
+  try { const db=getDB('todoCostoAvances'); if(db) todoCostoAvances=await queryDB(db, null, [{property:'Fecha',direction:'descending'}]); } catch(e){}
 
   const projectData = projects.map(p => ({
     name: getTitle(p), status: getSelect(p,'Status'), progress: getNumber(p,'Progress %')||0,
@@ -21,10 +22,25 @@ export default async function ProjectsPage() {
     return order.indexOf(a.status) - order.indexOf(b.status);
   });
 
+  // Build advances by project ID
+  const advByProject = {};
+  todoCostoAvances.forEach(a => {
+    const projId = a.properties?.['Todo Costo']?.relation?.[0]?.id;
+    if (!projId) return;
+    if (!advByProject[projId]) advByProject[projId] = [];
+    advByProject[projId].push({
+      desc: getTitle(a), amount: getNumber(a,'Monto')||0,
+      date: getDate(a,'Fecha'), paidBy: getSelect(a,'Pagado por')||'Jeff',
+      notes: a.properties?.Notas?.rich_text?.[0]?.plain_text||'',
+    });
+  });
+
   const todoData = todoCosto.map(t => ({
+    id: t.id,
     name: getTitle(t), budget: getNumber(t,'Presupuesto Total')||0,
     pending: t.properties?.Pendiente?.formula?.number||0, status: getSelect(t,'Estado'),
     start: getDate(t,'Fecha inicio'),
+    advances: advByProject[t.id] || [],
   }));
 
   const statusColor = (s) => {
@@ -103,6 +119,34 @@ export default async function ProjectsPage() {
                         Pending: {fmt(Math.max(0,t.pending))} DOP
                       </span>
                     </div>
+                    {/* Advances detail */}
+                    {t.advances.length > 0 && (
+                      <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                        <p className="text-xs font-semibold mb-2" style={{ color: '#94a3b8' }}>AVANCES</p>
+                        {t.advances.map((a,j) => (
+                          <div key={j} className="flex items-center justify-between py-1.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                            <div className="flex items-center gap-2">
+                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold ${a.paidBy==='Jeff'?'bg-blue-900/50 text-blue-300':a.paidBy==='Cliente'?'bg-emerald-900/50 text-emerald-300':'bg-gray-700 text-gray-300'}`}>
+                                {a.paidBy==='Jeff'?'👤 Jeff':a.paidBy==='Cliente'?'✅ Cliente':a.paidBy}
+                              </span>
+                              <span className="text-xs text-white">{a.desc}</span>
+                              {a.date && <span className="text-xs" style={{ color: '#64748b' }}>{a.date}</span>}
+                            </div>
+                            <span className="text-xs font-mono font-semibold" style={{ color: a.paidBy==='Jeff'?'#f87171':'#6ee7b7' }}>
+                              {fmt(a.amount)} DOP
+                            </span>
+                          </div>
+                        ))}
+                        {t.advances.filter(a=>a.paidBy==='Jeff').length > 0 && (
+                          <div className="flex justify-between mt-2 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                            <span className="text-xs font-semibold" style={{ color: '#f87171' }}>⚠️ Client owes Jeff</span>
+                            <span className="text-xs font-mono font-bold" style={{ color: '#f87171' }}>
+                              {fmt(t.advances.filter(a=>a.paidBy==='Jeff').reduce((s,a)=>s+a.amount,0))} DOP
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
