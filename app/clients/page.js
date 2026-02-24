@@ -131,12 +131,22 @@ export default async function ClientsPage() {
           return tb - ta;
         }).map(([client, projects]) => {
           const clientTotal = Object.values(projects).flat().reduce((s,e)=>s+e.amount,0);
+          // Calculate todo costo pendiente for this client (budget remaining not yet advanced)
+          const clientTcPendiente = Object.keys(projects).reduce((s, proj) => {
+            const tc = tcSummary[`${client}::${proj}`];
+            return s + (tc ? tc.pending : 0);
+          }, 0);
+          const clientGrandTotal = clientTotal + clientTcPendiente;
           return (
             <div key={client} className="rounded-xl overflow-hidden mb-6" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
               {/* Client Header */}
               <div className="px-6 py-4 flex items-center justify-between" style={{ background: 'rgba(212,168,83,0.05)', borderBottom: '1px solid rgba(212,168,83,0.1)' }}>
                 <h3 className="text-lg font-bold text-white">🏢 {client}</h3>
-                <span className="text-lg font-bold text-red-400 font-mono">{fmt(clientTotal)} DOP</span>
+                <span className="text-lg font-bold font-mono">
+                  <span className="text-red-400">{fmt(clientTotal)}</span>
+                  {clientTcPendiente > 0 && <span style={{ color: '#64748b' }}> / {fmt(clientGrandTotal)}</span>}
+                  <span className="text-red-400"> DOP</span>
+                </span>
               </div>
 
               {Object.entries(projects).sort((a,b) => {
@@ -155,7 +165,11 @@ export default async function ClientsPage() {
                   <div key={project}>
                     <div className="px-6 py-3 flex items-center justify-between" style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                       <span className="text-sm font-semibold" style={{ color: '#d4a853' }}>📋 {project}</span>
-                      <span className="text-sm font-semibold text-white font-mono">{fmt(projTotal)} DOP</span>
+                      <span className="text-sm font-semibold font-mono">
+                        {(() => { const tc = tcSummary[`${client}::${project}`]; return tc && tc.budget > 0
+                          ? <><span className="text-white">{fmt(projTotal)}</span><span style={{ color: '#64748b' }}> / {fmt(tc.budget)}</span><span className="text-white"> DOP</span></>
+                          : <span className="text-white">{fmt(projTotal)} DOP</span>; })()}
+                      </span>
                     </div>
 
                     {/* Timesheets */}
