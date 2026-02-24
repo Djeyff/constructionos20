@@ -175,7 +175,7 @@ export default async function ClientsPage() {
                     {/* Timesheets */}
                     {tsItems.length > 0 && (
                       <div className="px-6 pl-10 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                        <p className="text-xs font-semibold mb-1" style={{ color: '#64748b' }}>⏱️ Timesheets ({fmt(tsTotal)} DOP)</p>
+                        <p className="text-xs font-semibold mb-1" style={{ color: '#d4a853' }}>⏱️ Timesheets <span className="font-mono">({fmt(tsTotal)} DOP)</span></p>
                         {tsItems.map((t,i) => (
                           <div key={i} className="flex items-center justify-between py-1">
                             <p className="text-xs" style={{ color: '#94a3b8' }}>
@@ -191,7 +191,7 @@ export default async function ClientsPage() {
                     {/* Expenses */}
                     {expItems.length > 0 && (
                       <div className="px-6 pl-10 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                        <p className="text-xs font-semibold mb-1" style={{ color: '#64748b' }}>💸 Expenses ({fmt(expTotal)} DOP)</p>
+                        <p className="text-xs font-semibold mb-1" style={{ color: '#d4a853' }}>💸 Expenses <span className="font-mono">({fmt(expTotal)} DOP)</span></p>
                         {expItems.map((e,i) => (
                           <div key={i} className="flex items-center justify-between py-1">
                             <p className="text-xs" style={{ color: '#94a3b8' }}>
@@ -208,7 +208,7 @@ export default async function ClientsPage() {
                       const tc = tcSummary[`${client}::${project}`] || {};
                       return (
                         <div className="px-6 pl-10 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', background: 'rgba(212,168,83,0.02)' }}>
-                          <p className="text-xs font-semibold mb-2" style={{ color: '#64748b' }}>🔨 A Todo Costo — Avances</p>
+                          <p className="text-xs font-semibold mb-2" style={{ color: '#d4a853' }}>🔨 A Todo Costo — Avances</p>
                           {advItems.map((a,i) => (
                             <div key={i} className="flex items-center justify-between py-1">
                               <p className="text-xs" style={{ color: '#94a3b8' }}>
