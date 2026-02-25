@@ -132,8 +132,30 @@ export default async function TimesheetsPage({ searchParams }) {
           </div>
         )}
 
-        {/* Table */}
-        <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        {/* Mobile Cards */}
+        <div className="sm:hidden space-y-2">
+          {data.map((t,i) => (
+            <div key={i} className="rounded-lg p-3" style={{ background: t.empPay==='Not Paid' ? 'rgba(239,68,68,0.06)' : 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <p className="text-sm font-medium text-white flex-1">{t.task}</p>
+                <span className={`text-sm font-mono font-bold shrink-0 ${t.amount > 0 ? 'text-white' : 'text-gray-600'}`}>{t.amount > 0 ? fmt(t.amount) : '—'}</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                <span style={{ color: '#94a3b8' }}>{t.date||'—'}</span>
+                {!selectedWorker && t.worker && <span style={{ color: '#d4a853' }}>{t.worker}</span>}
+                <span className="font-mono" style={{ color: '#d4a853' }}>{t.hours}h</span>
+                {t.client && <span className="text-white">{t.client}{t.project ? ` / ${t.project}` : ''}</span>}
+              </div>
+              <div className="flex gap-2 mt-1.5">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusColor(t.status)}`}>{t.status}</span>
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${payColor(t.empPay)}`}>{t.empPay}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop Table */}
+        <div className="hidden sm:block rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

@@ -74,7 +74,28 @@ export default async function ExpensesPage({ searchParams }) {
           <MonthFilter basePath="/expenses" selected={selectedMonth} />
         </div>
 
-        <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        {/* Mobile Cards */}
+        <div className="sm:hidden space-y-2">
+          {data.map((e,i) => (
+            <div key={i} className="rounded-lg p-3" style={{ background: e.status==='Pending Reimbursement' ? 'rgba(239,68,68,0.06)' : 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <p className="text-sm font-medium text-white flex-1">{e.desc}</p>
+                <span className="text-sm font-mono font-bold text-white shrink-0">{fmt(e.amount)}</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs mb-1.5">
+                <span style={{ color: '#94a3b8' }}>{e.date||'—'}</span>
+                {e.client && <span className="text-white">{e.client}{e.project ? ` / ${e.project}` : ''}</span>}
+              </div>
+              <div className="flex gap-2">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" style={{ background: 'rgba(212,168,83,0.1)', color: '#d4a853' }}>{e.category}</span>
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusColor(e.status)}`}>{e.status}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop Table */}
+        <div className="hidden sm:block rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
