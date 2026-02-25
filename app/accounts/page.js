@@ -72,8 +72,41 @@ export default async function AccountsPage() {
                 </div>
               </div>
 
-              {/* Ledger Table */}
-              <div className="overflow-x-auto">
+              {/* Mobile Cards */}
+              <div className="sm:hidden space-y-2 p-3">
+                {info.entries.map((e,i) => (
+                  <div key={i} className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <p className="text-sm font-medium text-white flex-1 min-w-0">{e.desc}{e.notes && <span className="text-xs ml-1" style={{ color: '#64748b' }}>({e.notes})</span>}</p>
+                      <span className={`text-sm font-bold font-mono shrink-0 ${e.balance>0?'text-red-400':'text-white'}`}>{e.balance>0?'+':''}{fmt(e.balance)}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {e.date && <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.06)', color: '#94a3b8' }}>{e.date}</span>}
+                      {e.method && <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'rgba(212,168,83,0.1)', color: '#d4a853' }}>{e.method}</span>}
+                    </div>
+                    <div className="flex gap-3 text-xs">
+                      {e.debit > 0 && <span className="text-red-400 font-mono">↑ {fmt(e.debit)}</span>}
+                      {e.credit > 0 && <span className="text-white font-mono">↓ {fmt(e.credit)}</span>}
+                    </div>
+                  </div>
+                ))}
+                <div className="rounded-lg p-3" style={{ background: 'rgba(212,168,83,0.05)', border: '1px solid rgba(212,168,83,0.15)' }}>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span style={{ color: '#d4a853' }}>They Owe</span>
+                    <span className="font-mono text-red-400 font-bold">{fmt(info.totalDebit)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span style={{ color: '#d4a853' }}>You Owe</span>
+                    <span className="font-mono text-white font-bold">{fmt(info.totalCredit)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm mt-2 pt-2" style={{ borderTop: '1px solid rgba(212,168,83,0.1)' }}>
+                    <span className="font-bold" style={{ color: '#d4a853' }}>Net Balance</span>
+                    <span className={`font-mono font-bold ${net>0?'text-red-400':'text-white'}`}>{net>0?'+':''}{fmt(net)} DOP</span>
+                  </div>
+                </div>
+              </div>
+              {/* Desktop Table */}
+              <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
