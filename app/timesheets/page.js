@@ -78,16 +78,16 @@ export default async function TimesheetsPage({ searchParams }) {
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0f1a2e 0%, #141f35 100%)' }}>
       <ConstructionNav />
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
             <h2 className="text-2xl font-bold text-white">Timesheets</h2>
             {selectedName && <p className="text-sm mt-1" style={{ color: '#d4a853' }}>Filtered: {selectedName}</p>}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
             <Stat label="Hours" value={`${totalHours}h`} color="#d4a853" />
             <Stat label="Total" value={`${fmt(totalAmount)}`} color="#fff" />
             <Stat label="Unpaid" value={`${fmt(totalUnpaid)}`} color="#f87171" />
-            <AddEntryModal defaultType="timesheet" triggerLabel="+ Add Timesheet" />
+            <AddEntryModal defaultType="timesheet" triggerLabel="+ Add" />
           </div>
         </div>
 
@@ -109,18 +109,18 @@ export default async function TimesheetsPage({ searchParams }) {
             </div>
             {Object.entries(byClient).sort((a,b) => b[1].unpaid - a[1].unpaid).map(([client, info]) => (
               <div key={client}>
-                <div className="px-6 py-3 flex items-center justify-between" style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <div className="px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-1" style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                   <span className="text-sm font-bold text-white">🏢 {client}</span>
-                  <div className="flex gap-4 text-sm font-mono">
+                  <div className="flex gap-3 text-xs sm:text-sm font-mono">
                     <span style={{ color: '#d4a853' }}>{info.hours}h</span>
                     <span className="text-white">{fmt(info.amount)} total</span>
                     {info.unpaid > 0 && <span className="text-red-400 font-bold">{fmt(info.unpaid)} unpaid</span>}
                   </div>
                 </div>
                 {info.items.filter(t=>t.empPay==='Not Paid').map((t,i) => (
-                  <div key={i} className="px-6 pl-10 py-1.5 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                    <p className="text-xs" style={{ color: '#94a3b8' }}>{t.date} · {t.task} · {t.hours}h</p>
-                    <span className={`text-xs font-mono ${t.amount > 0 ? 'text-red-400' : 'text-gray-600'}`}>{t.amount > 0 ? fmt(t.amount) : '—'}</span>
+                  <div key={i} className="px-4 sm:px-6 pl-6 sm:pl-10 py-1.5 flex items-center justify-between gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                    <p className="text-xs flex-1 min-w-0" style={{ color: '#94a3b8' }}>{t.date} · {t.task} · {t.hours}h</p>
+                    <span className={`text-xs font-mono shrink-0 ${t.amount > 0 ? 'text-red-400' : 'text-gray-600'}`}>{t.amount > 0 ? fmt(t.amount) : '—'}</span>
                   </div>
                 ))}
               </div>
@@ -173,9 +173,9 @@ function TH({ children, align }) {
 }
 function Stat({ label, value, color }) {
   return (
-    <div className="rounded-lg px-4 py-2" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+    <div className="rounded-lg px-3 py-1.5 sm:px-4 sm:py-2" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
       <span className="text-xs" style={{ color: '#64748b' }}>{label}</span>
-      <p className="text-lg font-bold font-mono" style={{ color }}>{value}</p>
+      <p className="text-sm sm:text-lg font-bold font-mono" style={{ color }}>{value}</p>
     </div>
   );
 }
