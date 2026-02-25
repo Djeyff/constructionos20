@@ -163,16 +163,16 @@ export default async function ConstructionDashboard({ searchParams }) {
 
         {/* KPIs Row 1 — always current */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-          <KPI icon="💸" label="Pending Reimbursement" value={`${fmt(totalPendingReimb+totalPendingTsReimb)} DOP`} color="red" sub={`${pendingReimb.length} exp + ${pendingTsReimb.length} ts`} />
-          <KPI icon="👷" label="Unpaid Workers" value={`${fmt(totalPendingTsPay)} DOP`} color="red" sub={`${pendingTsPay.length} timesheets`} />
-          <KPI icon="📊" label={`${monthLabel} Expenses`} value={`${fmt(totalMonthExp)} DOP`} color="blue" sub={`${monthExp.length} entries`} />
-          <KPI icon="⏱️" label={`${monthLabel} Hours`} value={`${monthHours}h`} color="gold" sub={`${monthTs.length} entries`} />
-          <KPI icon="🏗️" label="Active Projects" value={projectData.filter(p=>['Active','On Site','Mobilizing'].includes(p.status)).length} color="green" sub={`${projectData.length} total`} />
+          <KPI icon="💸" label="Pending Reimbursement" value={`${fmt(totalPendingReimb+totalPendingTsReimb)} DOP`} color="red" sub={`${pendingReimb.length} exp + ${pendingTsReimb.length} ts`} href="/clients" />
+          <KPI icon="👷" label="Unpaid Workers" value={`${fmt(totalPendingTsPay)} DOP`} color="red" sub={`${pendingTsPay.length} timesheets`} href="/timesheets?filter=unpaid" />
+          <KPI icon="📊" label={`${monthLabel} Expenses`} value={`${fmt(totalMonthExp)} DOP`} color="blue" sub={`${monthExp.length} entries`} href={selectedMonth ? `/expenses?month=${selectedMonth}` : '/expenses'} />
+          <KPI icon="⏱️" label={`${monthLabel} Hours`} value={`${monthHours}h`} color="gold" sub={`${monthTs.length} entries`} href={selectedMonth ? `/timesheets?month=${selectedMonth}` : '/timesheets'} />
+          <KPI icon="🏗️" label="Active Projects" value={projectData.filter(p=>['Active','On Site','Mobilizing'].includes(p.status)).length} color="green" sub={`${projectData.length} total`} href="/projects" />
         </div>
 
         {/* KPIs Row 2 */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="rounded-xl p-5" style={{
+          <a href="/maintenance" className="rounded-xl p-5 block cursor-pointer hover:scale-[1.02] transition-all duration-200" style={{
             background: kmRemaining <= 1000 ? 'rgba(248,113,113,0.06)' : 'rgba(52,211,153,0.06)',
             border: `1px solid ${kmRemaining <= 1000 ? 'rgba(248,113,113,0.15)' : 'rgba(52,211,153,0.15)'}`,
           }}>
@@ -189,13 +189,13 @@ export default async function ConstructionDashboard({ searchParams }) {
             {lastCam?.obs && !lastCam.obs.includes('Recordatorio') && (
               <p className="text-xs mt-1" style={{ color: '#d4a853' }}>📝 {lastCam.obs}</p>
             )}
-          </div>
+          </a>
           <KPI icon="📋" label="Todo Costo Pendiente" value={`${fmt(todoData.reduce((s,t)=>s+Math.max(0,t.pending),0))} DOP`}
-            color="gold" sub={`${todoData.length} projects`} />
+            color="gold" sub={`${todoData.length} projects`} href="/clients" />
           <KPI icon="🏢" label="Projects On Site" value={projectData.filter(p=>p.status==='On Site').length}
-            color="blue" sub={`${projectData.filter(p=>p.status==='Active').length} active`} />
+            color="blue" sub={`${projectData.filter(p=>p.status==='Active').length} active`} href="/projects" />
           <KPI icon="📅" label="This Week" value={`${allTimesheets.filter(t=>t.date>=weekAgo).length} entries`} color="green"
-            sub={`${allExpenses.filter(e=>e.date>=weekAgo).length} expenses`} />
+            sub={`${allExpenses.filter(e=>e.date>=weekAgo).length} expenses`} href="/timesheets" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -286,9 +286,10 @@ export default async function ConstructionDashboard({ searchParams }) {
         {/* Pending Reimbursements by Client */}
         {Object.keys(reimbByClient).length > 0 && (
           <div className="rounded-xl overflow-hidden mb-8" style={{ background: 'rgba(248,113,113,0.04)', border: '1px solid rgba(248,113,113,0.12)' }}>
-            <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(248,113,113,0.1)' }}>
+            <a href="/clients" className="px-6 py-4 flex items-center justify-between group cursor-pointer block" style={{ borderBottom: '1px solid rgba(248,113,113,0.1)' }}>
               <h3 className="text-lg font-semibold text-red-400">💰 Pending Reimbursements by Client</h3>
-            </div>
+              <span className="text-xs text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">View details →</span>
+            </a>
             {Object.entries(reimbByClient).sort((a,b)=>b[1].reduce((s,e)=>s+e.amount,0)-a[1].reduce((s,e)=>s+e.amount,0)).map(([client, items]) => {
               const total = items.reduce((s,e)=>s+e.amount,0);
               return (
@@ -312,9 +313,10 @@ export default async function ConstructionDashboard({ searchParams }) {
         {/* Unpaid Workers by Client > Worker */}
         {Object.keys(unpaidByClient).length > 0 && (
           <div className="rounded-xl overflow-hidden mb-8" style={{ background: 'rgba(251,191,36,0.04)', border: '1px solid rgba(251,191,36,0.12)' }}>
-            <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(251,191,36,0.1)' }}>
+            <a href="/timesheets?filter=unpaid" className="px-6 py-4 flex items-center justify-between group cursor-pointer block" style={{ borderBottom: '1px solid rgba(251,191,36,0.1)' }}>
               <h3 className="text-lg font-semibold text-amber-400">👷 Unpaid Workers ({pendingTsPay.length})</h3>
-            </div>
+              <span className="text-xs text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity">View details →</span>
+            </a>
             {Object.entries(unpaidByClient).map(([client, workers]) => {
               const clientTotal = Object.values(workers).flat().reduce((s,t)=>s+t.amount,0);
               return (
@@ -383,16 +385,17 @@ export default async function ConstructionDashboard({ searchParams }) {
   );
 }
 
-function KPI({ icon, label, value, color, sub }) {
+function KPI({ icon, label, value, color, sub, href }) {
   const colors = { red: 'text-red-400', green: 'text-emerald-400', blue: 'text-blue-400' };
+  const Tag = href ? 'a' : 'div';
   return (
-    <div className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+    <Tag href={href||undefined} className={`rounded-xl p-5 block ${href?'cursor-pointer hover:scale-[1.02] transition-all duration-200':''}`} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
       <div className="flex items-center gap-2 mb-2">
         <span className="text-lg">{icon}</span>
         <span className="text-xs font-medium uppercase tracking-wide" style={{ color: '#94a3b8' }}>{label}</span>
       </div>
       <p className={`text-xl font-bold ${colors[color]||''}`} style={color==='gold'?{color:'#d4a853'}:{}}>{value}</p>
-      {sub && <p className="text-xs mt-1" style={{ color: '#64748b' }}>{sub}</p>}
-    </div>
+      {sub && <p className="text-xs mt-1" style={{ color: '#64748b' }}>{sub}{href ? ' →' : ''}</p>}
+    </Tag>
   );
 }
