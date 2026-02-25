@@ -35,17 +35,17 @@ export default async function AccountsPage() {
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0f1a2e 0%, #141f35 100%)' }}>
       <ConstructionNav />
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+          <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold text-white">Personal Accounts</h2>
             <AddEntryModal defaultType="person" triggerLabel="+ Add Person" />
           </div>
-          <div className="rounded-lg px-5 py-3" style={{
+          <div className="rounded-lg px-3 py-2 sm:px-5 sm:py-3 shrink-0" style={{
             background: grandNet > 0 ? 'rgba(248,113,113,0.08)' : 'rgba(255,255,255,0.06)',
             border: `1px solid ${grandNet > 0 ? 'rgba(248,113,113,0.2)' : 'rgba(255,255,255,0.1)'}`,
           }}>
             <span className="text-xs uppercase tracking-wide" style={{ color: '#64748b' }}>Net Balance</span>
-            <p className={`text-2xl font-bold font-mono ${grandNet>0?'text-red-400':'text-white'}`}>
+            <p className={`text-xl sm:text-2xl font-bold font-mono ${grandNet>0?'text-red-400':'text-white'}`}>
               {grandNet>0?'+':''}{fmt(grandNet)} <span className="text-sm">DOP</span>
             </p>
           </div>
@@ -59,7 +59,7 @@ export default async function AccountsPage() {
               <div className="px-6 py-4 flex items-center justify-between" style={{ background: 'rgba(96,165,250,0.05)', borderBottom: '1px solid rgba(96,165,250,0.1)' }}>
                 <div>
                   <h3 className="text-lg font-bold text-white">👤 {person}</h3>
-                  <div className="flex gap-4 text-xs mt-1" style={{ color: '#94a3b8' }}>
+                  <div className="flex gap-3 flex-wrap text-xs mt-1" style={{ color: '#94a3b8' }}>
                     <span>They owe you: <span className="text-red-400 font-mono font-semibold">{fmt(info.totalDebit)}</span></span>
                     <span>You owe them: <span className="text-white font-mono font-semibold">{fmt(info.totalCredit)}</span></span>
                   </div>

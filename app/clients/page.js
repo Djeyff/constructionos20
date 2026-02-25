@@ -93,12 +93,12 @@ export default async function ClientsPage() {
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0f1a2e 0%, #141f35 100%)' }}>
       <ConstructionNav />
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">Clients — Pending Reimbursements</h2>
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg px-5 py-3" style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)' }}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-white">Clients — Pending Reimbursements</h2>
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="rounded-lg px-3 py-2 sm:px-5 sm:py-3" style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)' }}>
               <span className="text-xs text-red-400 uppercase tracking-wide">Total Owed</span>
-              <p className="text-2xl font-bold text-red-400 font-mono">{fmt(grandTotal)} <span className="text-sm">DOP</span></p>
+              <p className="text-lg sm:text-2xl font-bold text-red-400 font-mono">{fmt(grandTotal)} <span className="text-sm">DOP</span></p>
             </div>
             <AddEntryModal defaultType="client" triggerLabel="+ Add Client" />
           </div>
@@ -110,9 +110,9 @@ export default async function ClientsPage() {
             const debt = clientDebt[c.name] ? Object.values(clientDebt[c.name]).flat().reduce((s,e)=>s+e.amount,0) : 0;
             return (
               <div key={i} className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-base font-bold text-white">{c.name}</h3>
-                  {debt > 0 && <span className="text-sm font-bold text-red-400 font-mono">{fmt(debt)}</span>}
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <h3 className="text-base font-bold text-white min-w-0 truncate">{c.name}</h3>
+                  {debt > 0 && <span className="text-sm font-bold text-red-400 font-mono shrink-0">{fmt(debt)}</span>}
                 </div>
                 <div className="space-y-1 text-xs" style={{ color: '#94a3b8' }}>
                   {c.phone && <p>📞 {c.phone}</p>}
@@ -140,9 +140,9 @@ export default async function ClientsPage() {
           return (
             <div key={client} className="rounded-xl overflow-hidden mb-6" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
               {/* Client Header */}
-              <div className="px-6 py-4 flex items-center justify-between" style={{ background: 'rgba(212,168,83,0.05)', borderBottom: '1px solid rgba(212,168,83,0.1)' }}>
-                <h3 className="text-lg font-bold text-white">🏢 {client}</h3>
-                <span className="text-lg font-bold font-mono">
+              <div className="px-4 sm:px-6 py-4 flex items-center justify-between gap-2 flex-wrap" style={{ background: 'rgba(212,168,83,0.05)', borderBottom: '1px solid rgba(212,168,83,0.1)' }}>
+                <h3 className="text-base sm:text-lg font-bold text-white min-w-0 truncate">🏢 {client}</h3>
+                <span className="text-base sm:text-lg font-bold font-mono shrink-0">
                   <span className="text-red-400">{fmt(clientTotal)}</span>
                   {clientTcPendiente > 0 && <span style={{ color: '#64748b' }}> / {fmt(clientGrandTotal)}</span>}
                   <span className="text-red-400"> DOP</span>
@@ -163,9 +163,9 @@ export default async function ClientsPage() {
                 const advTotal = advItems.reduce((s,e)=>s+e.amount,0);
                 return (
                   <div key={project}>
-                    <div className="px-6 py-3 flex items-center justify-between" style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                      <span className="text-sm font-semibold" style={{ color: '#d4a853' }}>📋 {project}</span>
-                      <span className="text-sm font-semibold font-mono">
+                    <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-2 flex-wrap" style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <span className="text-sm font-semibold min-w-0 truncate" style={{ color: '#d4a853' }}>📋 {project}</span>
+                      <span className="text-sm font-semibold font-mono shrink-0">
                         {(() => { const tc = tcSummary[`${client}::${project}`]; return tc && tc.budget > 0
                           ? <><span className="text-white">{fmt(projTotal)}</span><span style={{ color: '#64748b' }}> / {fmt(tc.budget)}</span><span className="text-white"> DOP</span></>
                           : <span className="text-white">{fmt(projTotal)} DOP</span>; })()}
@@ -174,7 +174,7 @@ export default async function ClientsPage() {
 
                     {/* Timesheets */}
                     {tsItems.length > 0 && (
-                      <div className="px-6 pl-10 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                      <div className="px-4 sm:px-6 pl-6 sm:pl-10 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                         <p className="text-xs font-semibold mb-1" style={{ color: '#d4a853' }}>⏱️ Timesheets <span className="font-mono">({fmt(tsTotal)} DOP)</span></p>
                         {tsItems.map((t,i) => (
                           <div key={i} className="flex items-center justify-between py-1">
@@ -190,7 +190,7 @@ export default async function ClientsPage() {
 
                     {/* Expenses */}
                     {expItems.length > 0 && (
-                      <div className="px-6 pl-10 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                      <div className="px-4 sm:px-6 pl-6 sm:pl-10 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                         <p className="text-xs font-semibold mb-1" style={{ color: '#d4a853' }}>💸 Expenses <span className="font-mono">({fmt(expTotal)} DOP)</span></p>
                         {expItems.map((e,i) => (
                           <div key={i} className="flex items-center justify-between py-1">
@@ -207,7 +207,7 @@ export default async function ClientsPage() {
                     {advItems.length > 0 && (() => {
                       const tc = tcSummary[`${client}::${project}`] || {};
                       return (
-                        <div className="px-6 pl-10 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', background: 'rgba(212,168,83,0.02)' }}>
+                        <div className="px-4 sm:px-6 pl-6 sm:pl-10 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', background: 'rgba(212,168,83,0.02)' }}>
                           <p className="text-xs font-semibold mb-2" style={{ color: '#d4a853' }}>🔨 A Todo Costo — Avances</p>
                           {advItems.map((a,i) => (
                             <div key={i} className="flex items-center justify-between py-1">

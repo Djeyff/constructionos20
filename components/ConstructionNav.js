@@ -22,7 +22,7 @@ export default function ConstructionNav() {
         <a href="/" className="flex items-center gap-3">
           <div className="h-9 w-9 rounded-lg flex items-center justify-center text-base font-bold"
             style={{ background: 'linear-gradient(135deg, #d4a853, #c49a45)', color: '#0f1a2e' }}>🏗️</div>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-base font-bold text-white leading-tight">Construction OS</h1>
             <p className="text-xs leading-tight" style={{ color: '#d4a853' }}>Management Dashboard</p>
           </div>

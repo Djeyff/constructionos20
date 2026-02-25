@@ -146,7 +146,7 @@ export default async function ConstructionDashboard({ searchParams }) {
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0f1a2e 0%, #141f35 100%)' }}>
       <ConstructionNav />
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             <h2 className="text-2xl font-bold text-white">Dashboard</h2>
             <p className="text-sm mt-1" style={{ color: '#d4a853' }}>
@@ -293,14 +293,14 @@ export default async function ConstructionDashboard({ searchParams }) {
               const total = items.reduce((s,e)=>s+e.amount,0);
               return (
                 <div key={client}>
-                  <div className="px-6 py-3 flex items-center justify-between" style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <span className="text-sm font-bold text-white">🏢 {client}</span>
-                    <span className="text-sm font-bold text-red-400 font-mono">{fmt(total)} DOP</span>
+                  <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-2 flex-wrap" style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                    <span className="text-sm font-bold text-white min-w-0 truncate">🏢 {client}</span>
+                    <span className="text-sm font-bold text-red-400 font-mono shrink-0">{fmt(total)} DOP</span>
                   </div>
                   {items.map((e,i) => (
-                    <div key={i} className="px-6 pl-10 py-2 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                      <div><p className="text-sm text-white">{e.desc}</p><p className="text-xs" style={{ color: '#64748b' }}>{e.date} · {e.category||e.worker||''}</p></div>
-                      <span className={`text-sm font-mono ${e.amount>0?'text-red-400':'text-gray-500'}`}>{fmt(e.amount)}</span>
+                    <div key={i} className="px-4 sm:px-6 pl-6 sm:pl-10 py-2 flex items-center justify-between gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                      <div className="min-w-0 flex-1"><p className="text-sm text-white truncate">{e.desc}</p><p className="text-xs" style={{ color: '#64748b' }}>{e.date} · {e.category||e.worker||''}</p></div>
+                      <span className={`text-sm font-mono shrink-0 ${e.amount>0?'text-red-400':'text-gray-500'}`}>{fmt(e.amount)}</span>
                     </div>
                   ))}
                 </div>
@@ -319,22 +319,22 @@ export default async function ConstructionDashboard({ searchParams }) {
               const clientTotal = Object.values(workers).flat().reduce((s,t)=>s+t.amount,0);
               return (
                 <div key={client}>
-                  <div className="px-6 py-3 flex items-center justify-between" style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <span className="text-sm font-bold text-white">🏢 {client}</span>
-                    <span className="text-sm font-bold text-amber-400 font-mono">{fmt(clientTotal)} DOP</span>
+                  <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-2 flex-wrap" style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                    <span className="text-sm font-bold text-white min-w-0 truncate">🏢 {client}</span>
+                    <span className="text-sm font-bold text-amber-400 font-mono shrink-0">{fmt(clientTotal)} DOP</span>
                   </div>
                   {Object.entries(workers).map(([worker, tasks]) => {
                     const wTotal = tasks.reduce((s,t)=>s+t.amount,0);
                     return (
                       <div key={worker}>
-                        <div className="px-6 pl-10 py-2 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                          <span className="text-sm font-semibold" style={{ color: '#d4a853' }}>👤 {worker}</span>
-                          <span className="text-sm font-mono text-amber-400">{fmt(wTotal)} DOP</span>
+                        <div className="px-4 sm:px-6 pl-6 sm:pl-10 py-2 flex items-center justify-between gap-2 flex-wrap" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                          <span className="text-sm font-semibold min-w-0 truncate" style={{ color: '#d4a853' }}>👤 {worker}</span>
+                          <span className="text-sm font-mono text-amber-400 shrink-0">{fmt(wTotal)} DOP</span>
                         </div>
                         {tasks.map((t,i) => (
-                          <div key={i} className="px-6 pl-16 py-1.5 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                            <p className="text-xs" style={{ color: '#94a3b8' }}>{t.date} · {t.task} · {t.hours}h</p>
-                            <span className={`text-xs font-mono ${t.amount>0?'text-white':'text-gray-500'}`}>{t.amount>0?fmt(t.amount):'—'}</span>
+                          <div key={i} className="px-4 sm:px-6 pl-8 sm:pl-16 py-1.5 flex items-center justify-between gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                            <p className="text-xs flex-1 min-w-0 truncate" style={{ color: '#94a3b8' }}>{t.date} · {t.task} · {t.hours}h</p>
+                            <span className={`text-xs font-mono shrink-0 ${t.amount>0?'text-white':'text-gray-500'}`}>{t.amount>0?fmt(t.amount):'—'}</span>
                           </div>
                         ))}
                       </div>
@@ -357,14 +357,14 @@ export default async function ConstructionDashboard({ searchParams }) {
               const net = data.totalDebit - data.totalCredit;
               return (
                 <div key={person} className="px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-start justify-between gap-2 mb-2 flex-wrap">
                     <span className="text-sm font-bold text-white">👤 {person}</span>
-                    <div className="text-right">
-                      <span className={`text-lg font-bold font-mono ${net>0?'text-red-400':'text-white'}`}>{net>0?'+':''}{fmt(net)} DOP</span>
+                    <div className="text-right shrink-0">
+                      <span className={`text-base sm:text-lg font-bold font-mono ${net>0?'text-red-400':'text-white'}`}>{net>0?'+':''}{fmt(net)} DOP</span>
                       <p className="text-xs" style={{ color: '#64748b' }}>{net>0?`${person} owes you`:`You owe ${person}`}</p>
                     </div>
                   </div>
-                  <div className="flex gap-4 text-xs" style={{ color: '#94a3b8' }}>
+                  <div className="flex gap-3 flex-wrap text-xs" style={{ color: '#94a3b8' }}>
                     <span>They owe: <span className="text-red-400 font-mono font-semibold">{fmt(data.totalDebit)}</span></span>
                     <span>You owe: <span className="text-white font-mono">{fmt(data.totalCredit)}</span></span>
                     <span>{data.entries.length} entries</span>

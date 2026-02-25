@@ -52,18 +52,18 @@ export default async function ExpensesPage({ searchParams }) {
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0f1a2e 0%, #141f35 100%)' }}>
       <ConstructionNav />
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
             <h2 className="text-2xl font-bold text-white">Expenses{selectedMonth ? ` — ${monthLabel}` : ''}</h2>
           </div>
-          <div className="flex gap-3">
-            <div className="rounded-lg px-4 py-2" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="flex gap-2 flex-wrap">
+            <div className="rounded-lg px-3 py-1.5 sm:px-4 sm:py-2" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
               <span className="text-xs" style={{ color: '#64748b' }}>Total</span>
-              <p className="text-lg font-bold text-white font-mono">{fmt(total)} <span className="text-xs font-normal" style={{ color: '#64748b' }}>DOP</span></p>
+              <p className="text-sm sm:text-lg font-bold text-white font-mono">{fmt(total)} <span className="text-xs font-normal" style={{ color: '#64748b' }}>DOP</span></p>
             </div>
-            <div className="rounded-lg px-4 py-2" style={{ background: 'rgba(248,113,113,0.05)', border: '1px solid rgba(248,113,113,0.15)' }}>
-              <span className="text-xs text-red-400">Pending Reimbursement</span>
-              <p className="text-lg font-bold text-red-400 font-mono">{fmt(totalPending)} <span className="text-xs font-normal" style={{ color: '#64748b' }}>DOP</span></p>
+            <div className="rounded-lg px-3 py-1.5 sm:px-4 sm:py-2" style={{ background: 'rgba(248,113,113,0.05)', border: '1px solid rgba(248,113,113,0.15)' }}>
+              <span className="text-xs text-red-400">Pending Reimb.</span>
+              <p className="text-sm sm:text-lg font-bold text-red-400 font-mono">{fmt(totalPending)} <span className="text-xs font-normal" style={{ color: '#64748b' }}>DOP</span></p>
             </div>
             <AddEntryModal defaultType="expense" triggerLabel="+ Add Expense" />
           </div>
