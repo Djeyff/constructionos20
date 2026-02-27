@@ -151,8 +151,8 @@ export default async function TimesheetsPage({ searchParams }) {
               <div className="flex gap-2 mt-1.5 flex-wrap items-center">
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusColor(t.status)}`}>{t.status}</span>
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${payColor(t.empPay)}`}>{t.empPay}</span>
-                {t.empPay === 'Not Paid' && <MarkPaidButton pageId={t.id} />}
-                {t.status === 'Pending Reimbursement' && <MarkReimbursedButton pageId={t.id} type="timesheet" />}
+                <MarkPaidButton pageId={t.id} currentStatus={t.empPay} />
+                <MarkReimbursedButton pageId={t.id} type="timesheet" currentStatus={t.status} />
               </div>
             </div>
           ))}
@@ -185,8 +185,8 @@ export default async function TimesheetsPage({ searchParams }) {
                     <td className={`py-2.5 px-4 text-right font-mono font-semibold ${t.amount > 0 ? 'text-white' : 'text-gray-600'}`}>{t.amount > 0 ? fmt(t.amount) : '—'}</td>
                     <td className="py-2.5 px-4">
                       <div className="flex gap-1">
-                        {t.empPay === 'Not Paid' && <MarkPaidButton pageId={t.id} />}
-                        {t.status === 'Pending Reimbursement' && <MarkReimbursedButton pageId={t.id} type="timesheet" />}
+                        <MarkPaidButton pageId={t.id} currentStatus={t.empPay} />
+                        <MarkReimbursedButton pageId={t.id} type="timesheet" currentStatus={t.status} />
                       </div>
                     </td>
                   </tr>

@@ -91,7 +91,7 @@ export default async function ExpensesPage({ searchParams }) {
               <div className="flex gap-2 flex-wrap items-center">
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" style={{ background: 'rgba(212,168,83,0.1)', color: '#d4a853' }}>{e.category}</span>
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusColor(e.status)}`}>{e.status}</span>
-                {e.status === 'Pending Reimbursement' && <MarkReimbursedButton pageId={e.id} type="expense" />}
+                <MarkReimbursedButton pageId={e.id} type="expense" currentStatus={e.status} />
               </div>
             </div>
           ))}
@@ -121,7 +121,7 @@ export default async function ExpensesPage({ searchParams }) {
                     <td className="py-2.5 px-4"><span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusColor(e.status)}`}>{e.status}</span></td>
                     <td className="py-2.5 px-4 text-right font-mono font-semibold text-white">{fmt(e.amount)}</td>
                     <td className="py-2.5 px-4">
-                      {e.status === 'Pending Reimbursement' && <MarkReimbursedButton pageId={e.id} type="expense" />}
+                      <MarkReimbursedButton pageId={e.id} type="expense" currentStatus={e.status} />
                     </td>
                   </tr>
                 ))}
