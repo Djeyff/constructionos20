@@ -50,6 +50,7 @@ export default async function ConstructionDashboard({ searchParams }) {
     project: projectNames[getRelationId(e,'Project')] || '',
   }));
   const allTimesheets = timesheets.map(t => ({
+    id: t.id,
     task: getTitle(t), hours: getNumber(t,'Hours')||0, date: getDate(t,'Date'),
     status: getSelect(t,'Status'), empPay: getSelect(t,'Employee payment status'),
     amount: getNumber(t,'Amount')||getNumber(t,'Fixed Amount')||0,
@@ -313,56 +314,7 @@ export default async function ConstructionDashboard({ searchParams }) {
 
         {/* Unpaid Workers by Client > Worker */}
         {Object.keys(unpaidByClient).length > 0 && (
-          <div className="rounded-xl overflow-hidden mb-8" style={{ background: 'rgba(251,191,36,0.04)', border: '1px solid rgba(251,191,36,0.12)' }}>
-            <a href="/timesheets?filter=unpaid" className="px-6 py-4 flex items-center justify-between group cursor-pointer block" style={{ borderBottom: '1px solid rgba(251,191,36,0.1)' }}>
-              <h3 className="text-lg font-semibold text-amber-400">👷 Unpaid Workers ({pendingTsPay.length})</h3>
-              <span className="text-xs text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity">View details →</span>
-            </a>
-            {Object.entries(unpaidByClient).map(([client, workers]) => {
-              const clientTotal = Object.values(workers).flat().reduce((s,t)=>s+t.amount,0);
-              return (
-                <div key={client}>
-                  <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-2 flex-wrap" style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <span className="text-sm font-bold text-white min-w-0 truncate">🏢 {client}</span>
-                    <span className="text-sm font-bold text-amber-400 font-mono shrink-0">{fmt(clientTotal)} DOP</span>
-                  </div>
-                  {Object.entries(workers).map(([worker, tasks]) => {
-                    const wTotal = tasks.reduce((s,t)=>s+t.amount,0);
-                    return (
-                      <div key={worker}>
-                        <div className="px-4 sm:px-6 pl-6 sm:pl-10 py-2 flex items-center justify-between gap-2 flex-wrap" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                          <span className="text-sm font-semibold min-w-0 truncate" style={{ color: '#d4a853' }}>👤 {worker}</span>
-                          <span className="text-sm font-mono text-amber-400 shrink-0">{fmt(wTotal)} DOP</span>
-                        </div>
-                        {(() => {
-                          const byProject = {};
-                          tasks.forEach(t => {
-                            const proj = t.project || 'Sin Proyecto';
-                            if (!byProject[proj]) byProject[proj] = [];
-                            byProject[proj].push(t);
-                          });
-                          return Object.entries(byProject).map(([proj, pts]) => (
-                            <div key={proj}>
-                              <div className="px-4 sm:px-6 pl-10 sm:pl-20 py-1 flex items-center justify-between gap-2 flex-wrap" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)', background: 'rgba(255,255,255,0.01)' }}>
-                                <span className="text-xs font-semibold" style={{ color: '#d4a853', opacity: 0.7 }}>📁 {proj}</span>
-                                <span className="text-xs font-mono shrink-0" style={{ color: '#d4a853', opacity: 0.7 }}>{fmt(pts.reduce((s,t)=>s+t.amount,0))} DOP</span>
-                              </div>
-                              {pts.map((t,i) => (
-                                <div key={i} className="px-4 sm:px-6 pl-12 sm:pl-24 py-1.5 flex items-center justify-between gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                                  <p className="text-xs flex-1 min-w-0 truncate" style={{ color: '#94a3b8' }}>{t.date} · {t.task} · {t.hours}h</p>
-                                  <span className={`text-xs font-mono shrink-0 ${t.amount>0?'text-white':'text-gray-500'}`}>{t.amount>0?fmt(t.amount):'—'}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ));
-                        })()}
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </div>
+          <UnpaidWorkers unpaidByClient={unpaidByClient} pendingTsPayLength={pendingTsPay.length} />
         )}
 
         {/* Personal Ledger */}
