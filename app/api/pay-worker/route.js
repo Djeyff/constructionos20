@@ -1,53 +1,42 @@
 import { NextResponse } from 'next/server';
-import { Client } from '@notionhq/client';
+import fs from 'fs';
 
-const notion = new Client({
-  auth: process.env.NOTION_TOKEN || 'ntn_FM1902323147EWoVqHsKxbuASUnFEcgXgbVMCCjeQWMdD2', // Fallback for dev, remove in prod
-});
+const TOKEN = (() => {
+  try { return fs.readFileSync('/home/node/.openclaw/workspace/secrets/notion_token.txt', 'utf8').trim(); }
+  catch { return process.env.NOTION_TOKEN || ''; }
+})();
 
-// Assuming the Employee payment status property ID is known or can be fetched
-// For now, using property name "Employee payment status" - Notion API accepts names
+async function updatePage(pageId) {
+  const cleanId = pageId.replace(/-/g, '');
+  const formattedId = `${cleanId.slice(0,8)}-${cleanId.slice(8,12)}-${cleanId.slice(12,16)}-${cleanId.slice(16,20)}-${cleanId.slice(20)}`;
+
+  const res = await fetch(`https://api.notion.com/v1/pages/${formattedId}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${TOKEN}`,
+      'Notion-Version': '2022-06-28',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ properties: { 'Employee payment status': { select: { name: 'Paid' } } } }),
+  });
+  return res.ok;
+}
+
 export async function POST(request) {
   try {
     const { pageIds } = await request.json();
-
     if (!Array.isArray(pageIds) || pageIds.length === 0) {
-      return NextResponse.json({ success: false, error: 'pageIds must be a non-empty array' }, { status: 400 });
+      return NextResponse.json({ error: 'pageIds must be a non-empty array' }, { status: 400 });
+    }
+    if (pageIds.length > 50) {
+      return NextResponse.json({ error: 'Too many pages' }, { status: 400 });
     }
 
-    if (pageIds.length > 50) { // Reasonable limit to prevent abuse
-      return NextResponse.json({ success: false, error: 'Too many pages at once' }, { status: 400 });
-    }
+    const results = await Promise.allSettled(pageIds.filter(id => id && typeof id === 'string').map(id => updatePage(id)));
+    const updated = results.filter(r => r.status === 'fulfilled' && r.value).length;
 
-    const updates = [];
-    for (const pageId of pageIds) {
-      if (!pageId || typeof pageId !== 'string') {
-        continue; // Skip invalid
-      }
-
-      // Clean Notion page ID (remove dashes if present)
-      const cleanId = pageId.replace(/-/g, '');
-
-      updates.push(
-        notion.pages.update({
-          page_id: cleanId,
-          properties: {
-            'Employee payment status': {
-              select: {
-                name: 'Paid',
-              },
-            },
-          },
-        })
-      );
-    }
-
-    const results = await Promise.allSettled(updates);
-    const successful = results.filter(r => r.status === 'fulfilled').length;
-
-    return NextResponse.json({ success: true, updated: successful });
-  } catch (error) {
-    console.error('Error updating worker payments:', error);
-    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ success: true, updated });
+  } catch (e) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }
