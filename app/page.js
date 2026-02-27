@@ -55,6 +55,7 @@ export default async function ConstructionDashboard({ searchParams }) {
     amount: getNumber(t,'Amount')||getNumber(t,'Fixed Amount')||0,
     worker: peopleNames[getRelationId(t,'Employee')] || '',
     client: clientNames[getRelationId(t,'Client')] || '',
+    project: projectNames[getRelationId(t,'Project')] || '',
   }));
 
   // Month-filtered data
