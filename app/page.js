@@ -333,12 +333,28 @@ export default async function ConstructionDashboard({ searchParams }) {
                           <span className="text-sm font-semibold min-w-0 truncate" style={{ color: '#d4a853' }}>👤 {worker}</span>
                           <span className="text-sm font-mono text-amber-400 shrink-0">{fmt(wTotal)} DOP</span>
                         </div>
-                        {tasks.map((t,i) => (
-                          <div key={i} className="px-4 sm:px-6 pl-8 sm:pl-16 py-1.5 flex items-center justify-between gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                            <p className="text-xs flex-1 min-w-0 truncate" style={{ color: '#94a3b8' }}>{t.date} · {t.task} · {t.hours}h</p>
-                            <span className={`text-xs font-mono shrink-0 ${t.amount>0?'text-white':'text-gray-500'}`}>{t.amount>0?fmt(t.amount):'—'}</span>
-                          </div>
-                        ))}
+                        {(() => {
+                          const byProject = {};
+                          tasks.forEach(t => {
+                            const proj = t.project || 'Sin Proyecto';
+                            if (!byProject[proj]) byProject[proj] = [];
+                            byProject[proj].push(t);
+                          });
+                          return Object.entries(byProject).map(([proj, pts]) => (
+                            <div key={proj}>
+                              <div className="px-4 sm:px-6 pl-10 sm:pl-20 py-1 flex items-center justify-between gap-2 flex-wrap" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)', background: 'rgba(255,255,255,0.01)' }}>
+                                <span className="text-xs font-semibold" style={{ color: '#d4a853', opacity: 0.7 }}>📁 {proj}</span>
+                                <span className="text-xs font-mono shrink-0" style={{ color: '#d4a853', opacity: 0.7 }}>{fmt(pts.reduce((s,t)=>s+t.amount,0))} DOP</span>
+                              </div>
+                              {pts.map((t,i) => (
+                                <div key={i} className="px-4 sm:px-6 pl-12 sm:pl-24 py-1.5 flex items-center justify-between gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                  <p className="text-xs flex-1 min-w-0 truncate" style={{ color: '#94a3b8' }}>{t.date} · {t.task} · {t.hours}h</p>
+                                  <span className={`text-xs font-mono shrink-0 ${t.amount>0?'text-white':'text-gray-500'}`}>{t.amount>0?fmt(t.amount):'—'}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ));
+                        })()}
                       </div>
                     );
                   })}
