@@ -3,6 +3,7 @@ import { queryDB, buildNameMap, getTitle, getNumber, getSelect, getDate, getRela
 import ConstructionNav from '@/components/ConstructionNav';
 import AddEntryModal from '@/components/AddEntryModal';
 import MonthFilter from '@/components/MonthFilter';
+import { MarkReimbursedButton } from '@/components/ActionButtons';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +19,7 @@ export default async function ExpensesPage({ searchParams }) {
   try { expenses=await queryDB(getDB('expenses'),undefined,[{property:'Date',direction:'descending'}]); } catch(e){}
 
   const allData = expenses.map(e => ({
+    id: e.id,
     desc: getTitle(e), amount: getNumber(e,'Amount')||0, date: getDate(e,'Date'),
     status: getSelect(e,'Status'), category: getSelect(e,'Category'), paidFrom: getSelect(e,'Paid From'),
     client: clientNames[getRelationId(e,'Client')] || '',
@@ -86,9 +88,10 @@ export default async function ExpensesPage({ searchParams }) {
                 <span style={{ color: '#94a3b8' }}>{e.date||'—'}</span>
                 {e.client && <span className="text-white">{e.client}{e.project ? ` / ${e.project}` : ''}</span>}
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap items-center">
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" style={{ background: 'rgba(212,168,83,0.1)', color: '#d4a853' }}>{e.category}</span>
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusColor(e.status)}`}>{e.status}</span>
+                {e.status === 'Pending Reimbursement' && <MarkReimbursedButton pageId={e.id} type="expense" />}
               </div>
             </div>
           ))}
@@ -100,7 +103,7 @@ export default async function ExpensesPage({ searchParams }) {
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
-                  <TH>Date</TH><TH>Description</TH><TH>Client / Project</TH><TH>Category</TH><TH>Status</TH><TH align="right">Amount</TH>
+                  <TH>Date</TH><TH>Description</TH><TH>Client / Project</TH><TH>Category</TH><TH>Status</TH><TH align="right">Amount</TH><TH>Actions</TH>
                 </tr>
               </thead>
               <tbody>
@@ -117,6 +120,9 @@ export default async function ExpensesPage({ searchParams }) {
                     <td className="py-2.5 px-4"><span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" style={{ background: 'rgba(212,168,83,0.1)', color: '#d4a853' }}>{e.category}</span></td>
                     <td className="py-2.5 px-4"><span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusColor(e.status)}`}>{e.status}</span></td>
                     <td className="py-2.5 px-4 text-right font-mono font-semibold text-white">{fmt(e.amount)}</td>
+                    <td className="py-2.5 px-4">
+                      {e.status === 'Pending Reimbursement' && <MarkReimbursedButton pageId={e.id} type="expense" />}
+                    </td>
                   </tr>
                 ))}
               </tbody>

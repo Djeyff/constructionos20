@@ -3,6 +3,7 @@ import { queryDB, buildNameMap, getTitle, getNumber, getSelect, getDate, getRela
 import ConstructionNav from '@/components/ConstructionNav';
 import AddEntryModal from '@/components/AddEntryModal';
 import WorkerFilter from '@/components/WorkerFilter';
+import { MarkPaidButton, MarkReimbursedButton } from '@/components/ActionButtons';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +20,7 @@ export default async function TimesheetsPage({ searchParams }) {
   try { timesheets=await queryDB(getDB('timesheets'),undefined,[{property:'Date',direction:'descending'}]); } catch(e){}
 
   const allData = timesheets.map(t => ({
+    id: t.id,
     task: getTitle(t), hours: getNumber(t,'Hours')||0, date: getDate(t,'Date'),
     status: getSelect(t,'Status'), empPay: getSelect(t,'Employee payment status'),
     amount: getNumber(t,'Amount')||getNumber(t,'Fixed Amount')||0,
@@ -146,9 +148,11 @@ export default async function TimesheetsPage({ searchParams }) {
                 <span className="font-mono" style={{ color: '#d4a853' }}>{t.hours}h</span>
                 {t.client && <span className="text-white">{t.client}{t.project ? ` / ${t.project}` : ''}</span>}
               </div>
-              <div className="flex gap-2 mt-1.5">
+              <div className="flex gap-2 mt-1.5 flex-wrap items-center">
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusColor(t.status)}`}>{t.status}</span>
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${payColor(t.empPay)}`}>{t.empPay}</span>
+                {t.empPay === 'Not Paid' && <MarkPaidButton pageId={t.id} />}
+                {t.status === 'Pending Reimbursement' && <MarkReimbursedButton pageId={t.id} type="timesheet" />}
               </div>
             </div>
           ))}
@@ -161,7 +165,7 @@ export default async function TimesheetsPage({ searchParams }) {
               <thead>
                 <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
                   <TH>Date</TH>{!selectedWorker && <TH>Worker</TH>}<TH>Task</TH><TH>Client / Project</TH>
-                  <TH align="right">Hours</TH><TH>Client Status</TH><TH>Employee Pay</TH><TH align="right">Amount</TH>
+                  <TH align="right">Hours</TH><TH>Client Status</TH><TH>Employee Pay</TH><TH align="right">Amount</TH><TH>Actions</TH>
                 </tr>
               </thead>
               <tbody>
@@ -179,6 +183,12 @@ export default async function TimesheetsPage({ searchParams }) {
                     <td className="py-2.5 px-4"><span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusColor(t.status)}`}>{t.status}</span></td>
                     <td className="py-2.5 px-4"><span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${payColor(t.empPay)}`}>{t.empPay}</span></td>
                     <td className={`py-2.5 px-4 text-right font-mono font-semibold ${t.amount > 0 ? 'text-white' : 'text-gray-600'}`}>{t.amount > 0 ? fmt(t.amount) : '—'}</td>
+                    <td className="py-2.5 px-4">
+                      <div className="flex gap-1">
+                        {t.empPay === 'Not Paid' && <MarkPaidButton pageId={t.id} />}
+                        {t.status === 'Pending Reimbursement' && <MarkReimbursedButton pageId={t.id} type="timesheet" />}
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
