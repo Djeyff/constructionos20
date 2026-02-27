@@ -5,6 +5,7 @@ import MonthFilter from '@/components/MonthFilter';
 import TodoistWidget from '@/components/TodoistWidget';
 import AddEntryModal from '@/components/AddEntryModal';
 import PendingReimbursements from '@/components/PendingReimbursements';
+import UnpaidWorkers from '@/components/UnpaidWorkers';
 
 export const dynamic = 'force-dynamic';
 
