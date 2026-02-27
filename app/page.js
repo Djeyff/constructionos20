@@ -4,6 +4,7 @@ import ConstructionNav from '@/components/ConstructionNav';
 import MonthFilter from '@/components/MonthFilter';
 import TodoistWidget from '@/components/TodoistWidget';
 import AddEntryModal from '@/components/AddEntryModal';
+import PendingReimbursements from '@/components/PendingReimbursements';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,6 +45,7 @@ export default async function ConstructionDashboard({ searchParams }) {
 
   // Process all data
   const allExpenses = expenses.map(e => ({
+    id: e.id,
     desc: getTitle(e), amount: getNumber(e,'Amount')||0, date: getDate(e,'Date'),
     status: getSelect(e,'Status'), category: getSelect(e,'Category'),
     client: clientNames[getRelationId(e,'Client')] || '',
@@ -121,12 +123,12 @@ export default async function ConstructionDashboard({ searchParams }) {
   pendingReimb.forEach(e => {
     const key = e.client || 'Sin Cliente';
     if (!reimbByClient[key]) reimbByClient[key] = [];
-    reimbByClient[key].push(e);
+    reimbByClient[key].push({ ...e, type: 'expense' });
   });
   pendingTsReimb.forEach(t => {
     const key = t.client || 'Sin Cliente';
     if (!reimbByClient[key]) reimbByClient[key] = [];
-    reimbByClient[key].push({ desc: t.task, amount: t.amount, date: t.date, category: 'Timesheet', worker: t.worker });
+    reimbByClient[key].push({ id: t.id, desc: t.task, amount: t.amount, date: t.date, category: 'Timesheet', worker: t.worker, type: 'timesheet' });
   });
 
   // Personal Ledger
@@ -287,29 +289,7 @@ export default async function ConstructionDashboard({ searchParams }) {
 
         {/* Pending Reimbursements by Client */}
         {Object.keys(reimbByClient).length > 0 && (
-          <div className="rounded-xl overflow-hidden mb-8" style={{ background: 'rgba(248,113,113,0.04)', border: '1px solid rgba(248,113,113,0.12)' }}>
-            <a href="/clients" className="px-6 py-4 flex items-center justify-between group cursor-pointer block" style={{ borderBottom: '1px solid rgba(248,113,113,0.1)' }}>
-              <h3 className="text-lg font-semibold text-red-400">💰 Pending Reimbursements by Client</h3>
-              <span className="text-xs text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">View details →</span>
-            </a>
-            {Object.entries(reimbByClient).sort((a,b)=>b[1].reduce((s,e)=>s+e.amount,0)-a[1].reduce((s,e)=>s+e.amount,0)).map(([client, items]) => {
-              const total = items.reduce((s,e)=>s+e.amount,0);
-              return (
-                <div key={client}>
-                  <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-2 flex-wrap" style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <span className="text-sm font-bold text-white min-w-0 truncate">🏢 {client}</span>
-                    <span className="text-sm font-bold text-red-400 font-mono shrink-0">{fmt(total)} DOP</span>
-                  </div>
-                  {items.map((e,i) => (
-                    <div key={i} className="px-4 sm:px-6 pl-6 sm:pl-10 py-2 flex items-center justify-between gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                      <div className="min-w-0 flex-1"><p className="text-sm text-white truncate">{e.desc}</p><p className="text-xs" style={{ color: '#64748b' }}>{e.date} · {e.category||e.worker||''}</p></div>
-                      <span className={`text-sm font-mono shrink-0 ${e.amount>0?'text-red-400':'text-gray-500'}`}>{fmt(e.amount)}</span>
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
-          </div>
+          <PendingReimbursements reimbByClient={reimbByClient} />
         )}
 
         {/* Unpaid Workers by Client > Worker */}
