@@ -7,14 +7,22 @@ export const dynamic = 'force-dynamic';
 export default async function MaintenancePage() {
   const fmt = (n) => (n||0).toLocaleString('en-US');
 
-  let mantPlantas=[], mantCamioneta=[];
+  let mantPlantas=[], mantCamioneta=[], mantGasolina=[];
   try { const db=getDB('mantPlantas'); if(db) mantPlantas=await queryDB(db,undefined,[{property:'Fecha',direction:'descending'}]); } catch(e){}
   try { const db=getDB('mantCamioneta'); if(db) mantCamioneta=await queryDB(db,undefined,[{property:'Fecha',direction:'descending'}]); } catch(e){}
+  try { const db=getDB('mantGasolina'); if(db) mantGasolina=await queryDB(db,undefined,[{property:'Fecha',direction:'descending'}]); } catch(e){}
 
   const plantData = mantPlantas.map(p => ({
     entry: getTitle(p), date: getDate(p,'Fecha'), plant: getSelect(p,'Planta'),
     aceite: getSelect(p,'Aceite'), filtroAire: getSelect(p,'Filtro Aire'), filtroAceite: getSelect(p,'Filtro Aceite'),
     estado: getSelect(p,'Estado'), obs: getText(p,'Observaciones'), next: getText(p,'Próxima Acción'),
+  }));
+
+  const gasData = mantGasolina.map(g => ({
+    entry: getTitle(g), date: getDate(g,'Fecha'), equipo: getSelect(g,'Equipo'),
+    aceite: getSelect(g,'Aceite'), filtroAire: getSelect(g,'Filtro Aire'), filtroAceite: getSelect(g,'Filtro Aceite'),
+    combustible: getSelect(g,'Combustible'), estado: getSelect(g,'Estado'),
+    obs: getText(g,'Observaciones'), next: getText(g,'Próxima Acción'),
   }));
 
   const camData = mantCamioneta.map(c => ({
@@ -121,6 +129,49 @@ export default async function MaintenancePage() {
             );
           })}
         </div>
+
+        {/* Equipos Gasolina */}
+        {gasData.length > 0 && (
+          <>
+            <h3 className="text-xl font-bold text-white mb-4 mt-8">⛽ Equipos Gasolina</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              {['Planta pequeña gasolina', 'Motobomba gasolina'].map(equipo => {
+                const entries = gasData.filter(g => g.equipo === equipo);
+                const latest = entries[0];
+                if (!latest) return (
+                  <div key={equipo} className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <h4 className="text-base font-bold text-white mb-2">{equipo}</h4>
+                    <p className="text-xs" style={{ color: '#64748b' }}>Sin registros</p>
+                  </div>
+                );
+                return (
+                  <div key={equipo} className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <h4 className="text-base font-bold text-white mb-3">{equipo}</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                      <Stat label="Aceite" value={statusIcon(latest.aceite)} />
+                      <Stat label="Filtro Aire" value={statusIcon(latest.filtroAire)} />
+                      <Stat label="Filtro Aceite" value={statusIcon(latest.filtroAceite)} />
+                      <Stat label="Combustible" value={statusIcon(latest.combustible)} />
+                    </div>
+                    <p className="text-xs" style={{ color: '#64748b' }}>Last: {latest.date} · Status: {latest.estado||'—'}</p>
+                    {latest.next && <p className="text-xs mt-1" style={{ color: '#d4a853' }}>Next: {latest.next}</p>}
+                    {latest.obs && <p className="text-xs mt-1" style={{ color: '#94a3b8' }}>📝 {latest.obs}</p>}
+                    {entries.length > 1 && (
+                      <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                        <p className="text-xs font-semibold mb-2" style={{ color: '#64748b' }}>History</p>
+                        {entries.slice(1,4).map((e,i) => (
+                          <p key={i} className="text-xs py-0.5" style={{ color: '#94a3b8' }}>
+                            {e.date} — {e.aceite} · {e.combustible}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
 
         {/* Full Camioneta History */}
         {camData.length > 1 && (

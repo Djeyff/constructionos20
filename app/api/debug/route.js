@@ -4,7 +4,7 @@ import { queryDB, getTitle } from '@/lib/notion';
 
 export async function GET() {
   const results = {};
-  const dbs = ['expenses','timesheets','projects','clients','people','todoCosto','mantPlantas','mantCamioneta'];
+  const dbs = ['expenses','timesheets','projects','clients','people','todoCosto','mantPlantas','mantCamioneta','mantGasolina'];
   for (const key of dbs) {
     const id = getDB(key);
     if (!id) { results[key] = 'no db id'; continue; }
