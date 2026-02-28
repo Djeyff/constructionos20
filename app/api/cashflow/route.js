@@ -77,8 +77,15 @@ export async function GET() {
       const clientRel = e.properties?.Client?.relation;
       const clientName = clientRel?.[0] ? await resolveName(clientRel[0].id) : '';
       const kdriveUrl = e.properties?.kDrive?.url || null;
+      // Split vendor from products: "Vendor — Products (Factura XXX)"
+      let vendor = title, products = '';
+      const dashIdx = title.indexOf('—');
+      if (dashIdx > 0) {
+        vendor = title.slice(0, dashIdx).trim();
+        products = title.slice(dashIdx + 1).trim();
+      }
       supplierDebt += amt;
-      supplierItems.push({ name: title.slice(0, 60), client: clientName, category, kdriveUrl });
+      supplierItems.push({ vendor, products, client: clientName, category, kdriveUrl });
     }
 
     const totalOwed = Object.values(clientOwes).reduce((a, b) => a + b, 0);

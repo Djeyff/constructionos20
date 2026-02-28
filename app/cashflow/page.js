@@ -65,8 +65,9 @@ export default function CashFlowPage() {
           <div className="p-4 sm:p-6 space-y-3">
             {data.supplierBreakdown.map((s, i) => (
               <div key={i} className="py-2 border-b" style={{ borderColor: '#1e293b' }}>
-                <p className="text-sm text-white">{s.name}</p>
-                <div className="flex gap-2 mt-1 flex-wrap items-center">
+                <p className="text-sm font-medium text-white">{s.vendor}</p>
+                {s.products && <p className="text-xs mt-0.5" style={{ color: '#94a3b8' }}>{s.products.replace(/,\s*/g, ' — ').replace(/\+/g, ' — ')}</p>}
+                <div className="flex gap-2 mt-1.5 flex-wrap items-center">
                   {s.client && <span className="text-xs px-2 py-0.5 rounded" style={{ background: '#1e293b', color: '#d4a853' }}>{s.client}</span>}
                   {s.category && <span className="text-xs px-2 py-0.5 rounded" style={{ background: '#1e293b', color: '#94a3b8' }}>{s.category}</span>}
                   {s.kdriveUrl && <a href={s.kdriveUrl} target="_blank" rel="noopener noreferrer" className="text-xs px-2 py-0.5 rounded" style={{ background: 'rgba(96,165,250,0.15)', color: '#60a5fa' }}>📷 Ver factura</a>}
