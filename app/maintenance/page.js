@@ -15,13 +15,15 @@ export default async function MaintenancePage() {
   const plantData = mantPlantas.map(p => ({
     entry: getTitle(p), date: getDate(p,'Fecha'), plant: getSelect(p,'Planta'),
     aceite: getSelect(p,'Aceite'), filtroAire: getSelect(p,'Filtro Aire'), filtroAceite: getSelect(p,'Filtro Aceite'),
-    estado: getSelect(p,'Estado'), obs: getText(p,'Observaciones'), next: getText(p,'Próxima Acción'),
+    estado: getSelect(p,'Estado'), horas: getNumber(p,'Horas totales'),
+    obs: getText(p,'Observaciones'), next: getText(p,'Próxima Acción'),
   }));
 
   const gasData = mantGasolina.map(g => ({
     entry: getTitle(g), date: getDate(g,'Fecha'), equipo: getSelect(g,'Equipo'),
     aceite: getSelect(g,'Aceite'), filtroAire: getSelect(g,'Filtro Aire'), filtroAceite: getSelect(g,'Filtro Aceite'),
     combustible: getSelect(g,'Combustible'), estado: getSelect(g,'Estado'),
+    horas: getNumber(g,'Horas totales'),
     obs: getText(g,'Observaciones'), next: getText(g,'Próxima Acción'),
   }));
 
@@ -110,6 +112,9 @@ export default async function MaintenancePage() {
                   <Stat label="Filtro Aire" value={statusIcon(latest.filtroAire)} />
                   <Stat label="Filtro Aceite" value={statusIcon(latest.filtroAceite)} />
                 </div>
+                {latest.horas != null && (
+                  <p className="text-xs mb-1 font-mono font-bold" style={{ color: '#d4a853' }}>⏱️ {latest.horas}h en medidor</p>
+                )}
                 <p className="text-xs" style={{ color: '#64748b' }}>Last: {latest.date} · Status: {latest.estado||'—'}</p>
                 {latest.next && <p className="text-xs mt-1" style={{ color: '#d4a853' }}>Next: {latest.next}</p>}
                 {latest.obs && <p className="text-xs mt-1" style={{ color: '#94a3b8' }}>📝 {latest.obs}</p>}
@@ -152,6 +157,11 @@ export default async function MaintenancePage() {
                       <Stat label="Filtro Aceite" value={statusIcon(latest.filtroAceite)} />
                       <Stat label="Combustible" value={statusIcon(latest.combustible)} />
                     </div>
+                    {latest.horas != null && (
+                      <div className="mb-2 px-3 py-1.5 rounded-lg inline-flex items-center gap-2" style={{ background: 'rgba(212,168,83,0.1)', border: '1px solid rgba(212,168,83,0.2)' }}>
+                        <span className="text-xs font-mono font-bold" style={{ color: '#d4a853' }}>⏱️ {latest.horas}h en medidor</span>
+                      </div>
+                    )}
                     <p className="text-xs" style={{ color: '#64748b' }}>Last: {latest.date} · Status: {latest.estado||'—'}</p>
                     {latest.next && <p className="text-xs mt-1" style={{ color: '#d4a853' }}>Next: {latest.next}</p>}
                     {latest.obs && <p className="text-xs mt-1" style={{ color: '#94a3b8' }}>📝 {latest.obs}</p>}
