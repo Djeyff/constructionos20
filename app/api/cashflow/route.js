@@ -76,8 +76,9 @@ export async function GET() {
       const category = e.properties?.Category?.select?.name || '';
       const clientRel = e.properties?.Client?.relation;
       const clientName = clientRel?.[0] ? await resolveName(clientRel[0].id) : '';
+      const kdriveUrl = e.properties?.kDrive?.url || null;
       supplierDebt += amt;
-      supplierItems.push({ name: title.slice(0, 60), client: clientName, category });
+      supplierItems.push({ name: title.slice(0, 60), client: clientName, category, kdriveUrl });
     }
 
     const totalOwed = Object.values(clientOwes).reduce((a, b) => a + b, 0);

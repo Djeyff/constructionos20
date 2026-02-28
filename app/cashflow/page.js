@@ -26,7 +26,7 @@ export default function CashFlowPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <div className="rounded-xl p-4 sm:p-6" style={{ background: '#111', border: '1px solid #1e293b' }}>
             <p className="text-xs uppercase tracking-wide" style={{ color: '#94a3b8' }}>Te deben</p>
-            <p className="text-2xl sm:text-3xl font-bold mt-1" style={{ color: '#6ee7b7' }}>{fmt(data.totalOwed)} <span className="text-sm">DOP</span></p>
+            <p className="text-2xl sm:text-3xl font-bold mt-1" style={{ color: '#f87171' }}>{fmt(data.totalOwed)} <span className="text-sm">DOP</span></p>
             <p className="text-xs mt-1" style={{ color: '#64748b' }}>Pending Reimbursement</p>
           </div>
           <div className="rounded-xl p-4 sm:p-6" style={{ background: '#111', border: '1px solid #1e293b' }}>
@@ -47,10 +47,10 @@ export default function CashFlowPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-white truncate">{c.name}</p>
                   <div className="w-full h-2 rounded-full mt-1" style={{ background: '#1e293b' }}>
-                    <div className="h-2 rounded-full bg-emerald-400" style={{ width: `${Math.min((c.amount / data.totalOwed) * 100, 100)}%` }}></div>
+                    <div className="h-2 rounded-full bg-red-400" style={{ width: `${Math.min((c.amount / data.totalOwed) * 100, 100)}%` }}></div>
                   </div>
                 </div>
-                <span className="ml-4 text-sm font-mono font-bold whitespace-nowrap" style={{ color: '#6ee7b7' }}>{fmt(c.amount)} DOP</span>
+                <span className="ml-4 text-sm font-mono font-bold whitespace-nowrap" style={{ color: '#f87171' }}>{fmt(c.amount)} DOP</span>
               </div>
             ))}
             {data.clientBreakdown.length === 0 && <p className="text-sm" style={{ color: '#64748b' }}>Nobody owes you. Nice.</p>}
@@ -66,9 +66,10 @@ export default function CashFlowPage() {
             {data.supplierBreakdown.map((s, i) => (
               <div key={i} className="py-2 border-b" style={{ borderColor: '#1e293b' }}>
                 <p className="text-sm text-white">{s.name}</p>
-                <div className="flex gap-2 mt-1 flex-wrap">
+                <div className="flex gap-2 mt-1 flex-wrap items-center">
                   {s.client && <span className="text-xs px-2 py-0.5 rounded" style={{ background: '#1e293b', color: '#d4a853' }}>{s.client}</span>}
                   {s.category && <span className="text-xs px-2 py-0.5 rounded" style={{ background: '#1e293b', color: '#94a3b8' }}>{s.category}</span>}
+                  {s.kdriveUrl && <a href={s.kdriveUrl} target="_blank" rel="noopener noreferrer" className="text-xs px-2 py-0.5 rounded" style={{ background: 'rgba(96,165,250,0.15)', color: '#60a5fa' }}>📷 Ver factura</a>}
                 </div>
               </div>
             ))}
