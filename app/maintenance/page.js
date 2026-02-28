@@ -131,8 +131,7 @@ export default async function MaintenancePage() {
         </div>
 
         {/* Equipos Gasolina */}
-        {gasData.length > 0 && (
-          <>
+        <>
             <h3 className="text-xl font-bold text-white mb-4 mt-8">⛽ Equipos Gasolina</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               {['Planta pequeña gasolina', 'Motobomba gasolina'].map(equipo => {
@@ -170,8 +169,7 @@ export default async function MaintenancePage() {
                 );
               })}
             </div>
-          </>
-        )}
+        </>
 
         {/* Full Camioneta History */}
         {camData.length > 1 && (
