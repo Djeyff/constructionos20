@@ -17,7 +17,10 @@ export default function CashFlowPage() {
   return (
     <div className="min-h-screen px-3 sm:px-6 py-6" style={{ background: '#0a0a0a', color: '#e2e8f0' }}>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-xl sm:text-2xl font-bold text-white mb-6">💰 Cash Position</h1>
+        <div className="flex items-center gap-4 mb-6">
+          <a href="/" className="text-sm px-3 py-1.5 rounded-lg" style={{ background: '#1e293b', color: '#94a3b8' }}>← Dashboard</a>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">💰 Cash Position</h1>
+        </div>
 
         {/* Summary card */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
@@ -59,11 +62,14 @@ export default function CashFlowPage() {
           <div className="px-4 sm:px-6 py-4 border-b" style={{ borderColor: '#1e293b' }}>
             <h2 className="text-lg font-semibold text-white">📤 Facturas a crédito (para contador)</h2>
           </div>
-          <div className="p-4 sm:p-6 space-y-2">
+          <div className="p-4 sm:p-6 space-y-3">
             {data.supplierBreakdown.map((s, i) => (
-              <div key={i} className="flex items-center gap-2 py-1">
-                <span className="text-sm" style={{ color: '#94a3b8' }}>•</span>
+              <div key={i} className="py-2 border-b" style={{ borderColor: '#1e293b' }}>
                 <p className="text-sm text-white">{s.name}</p>
+                <div className="flex gap-2 mt-1 flex-wrap">
+                  {s.client && <span className="text-xs px-2 py-0.5 rounded" style={{ background: '#1e293b', color: '#d4a853' }}>{s.client}</span>}
+                  {s.category && <span className="text-xs px-2 py-0.5 rounded" style={{ background: '#1e293b', color: '#94a3b8' }}>{s.category}</span>}
+                </div>
               </div>
             ))}
             {data.supplierBreakdown.length === 0 && <p className="text-sm" style={{ color: '#64748b' }}>Ninguna factura a crédito pendiente.</p>}

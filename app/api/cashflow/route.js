@@ -69,18 +69,20 @@ export async function GET() {
     }
 
     let supplierDebt = 0;
-    const suppliers = {};
+    const supplierItems = [];
     for (const e of contadorExp) {
       const amt = e.properties?.Amount?.number || 0;
       const title = e.properties?.Description?.title?.[0]?.text?.content || '?';
+      const category = e.properties?.Category?.select?.name || '';
+      const clientRel = e.properties?.Client?.relation;
+      const clientName = clientRel?.[0] ? await resolveName(clientRel[0].id) : '';
       supplierDebt += amt;
-      const vendor = title.split('—')[0].split('-')[0].trim().slice(0, 40);
-      suppliers[vendor] = (suppliers[vendor] || 0) + amt;
+      supplierItems.push({ name: title.slice(0, 60), client: clientName, category });
     }
 
     const totalOwed = Object.values(clientOwes).reduce((a, b) => a + b, 0);
     const clientBreakdown = Object.entries(clientOwes).sort((a, b) => b[1] - a[1]).map(([name, amount]) => ({ name, amount }));
-    const supplierBreakdown = Object.entries(suppliers).sort((a, b) => b[1] - a[1]).map(([name, amount]) => ({ name, amount }));
+    const supplierBreakdown = supplierItems;
 
     return NextResponse.json({ totalOwed, supplierDebt, clientBreakdown, supplierBreakdown });
   } catch (e) {

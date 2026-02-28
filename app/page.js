@@ -36,11 +36,12 @@ export default async function ConstructionDashboard({ searchParams }) {
   try { peopleNames = await buildNameMap(getDB('people')); } catch(e){}
   try { projectNames = await buildNameMap(getDB('projects')); } catch(e){}
 
-  let expenses=[], timesheets=[], projects=[], todoCosto=[], mantCamioneta=[], personalLedger=[];
+  let expenses=[], timesheets=[], projects=[], todoCosto=[], todoCostoAvances=[], mantCamioneta=[], personalLedger=[];
   try { expenses=await queryDB(getDB('expenses')); } catch(e){}
   try { timesheets=await queryDB(getDB('timesheets')); } catch(e){}
   try { projects=await queryDB(getDB('projects')); } catch(e){}
   try { todoCosto=await queryDB(getDB('todoCosto')); } catch(e){}
+  try { todoCostoAvances=await queryDB(getDB('todoCostoAvances')); } catch(e){}
   try { mantCamioneta=await queryDB(getDB('mantCamioneta'),undefined,[{property:'Fecha',direction:'descending'}]); } catch(e){}
   try { personalLedger=await queryDB(getDB('personalLedger'),undefined,[{property:'Date',direction:'ascending'}]); } catch(e){}
 
@@ -85,6 +86,15 @@ export default async function ConstructionDashboard({ searchParams }) {
     name: getTitle(t), budget: getNumber(t,'Presupuesto Total')||0,
     pending: t.properties?.Pendiente?.formula?.number||0, status: getSelect(t,'Estado'),
   }));
+
+  // Todo Costo advances — Jeff out-of-pocket
+  const jeffAdvances = todoCostoAvances.filter(a => 
+    getSelect(a,'Pagado por') === 'Jeff' && getSelect(a,'Reembolsado') === 'Pendiente'
+  );
+  const totalJeffAdvances = jeffAdvances.reduce((s,a) => s + (getNumber(a,'Monto')||0), 0);
+
+  // Cash position total (reimbursements + advances)
+  const cashPositionTotal = totalPendingReimb + totalPendingTsReimb + totalJeffAdvances;
 
   // Camioneta — find entry with Próximo km set
   const camEntries = mantCamioneta.map(c => ({
@@ -168,7 +178,7 @@ export default async function ConstructionDashboard({ searchParams }) {
 
         {/* KPIs Row 1 — always current */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-          <KPI icon="💰" label="Cash Position" value="→" color="gold" sub="Reimbursements & Debt" href="/cashflow" />
+          <KPI icon="💰" label="Cash Position" value={`${fmt(cashPositionTotal)} DOP`} color="green" sub="Te deben →" href="/cashflow" />
           <KPI icon="💸" label="Pending Reimbursement" value={`${fmt(totalPendingReimb+totalPendingTsReimb)} DOP`} color="red" sub={`${pendingReimb.length} exp + ${pendingTsReimb.length} ts`} href="/clients" />
           <KPI icon="👷" label="Unpaid Workers" value={`${fmt(totalPendingTsPay)} DOP`} color="red" sub={`${pendingTsPay.length} timesheets`} href="/timesheets?filter=unpaid" />
           <KPI icon="📊" label={`${monthLabel} Expenses`} value={`${fmt(totalMonthExp)} DOP`} color="blue" sub={`${monthExp.length} entries`} href={selectedMonth ? `/expenses?month=${selectedMonth}` : '/expenses'} />
@@ -198,6 +208,8 @@ export default async function ConstructionDashboard({ searchParams }) {
           </a>
           <KPI icon="📋" label="Todo Costo Pendiente" value={`${fmt(todoData.reduce((s,t)=>s+Math.max(0,t.pending),0))} DOP`}
             color="gold" sub={`${todoData.length} projects`} href="/clients" />
+          <KPI icon="🔨" label="Jeff Avances" value={`${fmt(totalJeffAdvances)} DOP`}
+            color="red" sub={`${jeffAdvances.length} avances pendientes`} href="/cashflow" />
           <KPI icon="🏢" label="Projects On Site" value={projectData.filter(p=>p.status==='On Site').length}
             color="blue" sub={`${projectData.filter(p=>p.status==='Active').length} active`} href="/projects" />
           <KPI icon="📅" label="This Week" value={`${allTimesheets.filter(t=>t.date>=weekAgo).length} entries`} color="green"
