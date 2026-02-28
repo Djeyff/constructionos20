@@ -168,6 +168,7 @@ export default async function ConstructionDashboard({ searchParams }) {
 
         {/* KPIs Row 1 — always current */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          <KPI icon="💰" label="Cash Position" value="→" color="gold" sub="Reimbursements & Debt" href="/cashflow" />
           <KPI icon="💸" label="Pending Reimbursement" value={`${fmt(totalPendingReimb+totalPendingTsReimb)} DOP`} color="red" sub={`${pendingReimb.length} exp + ${pendingTsReimb.length} ts`} href="/clients" />
           <KPI icon="👷" label="Unpaid Workers" value={`${fmt(totalPendingTsPay)} DOP`} color="red" sub={`${pendingTsPay.length} timesheets`} href="/timesheets?filter=unpaid" />
           <KPI icon="📊" label={`${monthLabel} Expenses`} value={`${fmt(totalMonthExp)} DOP`} color="blue" sub={`${monthExp.length} entries`} href={selectedMonth ? `/expenses?month=${selectedMonth}` : '/expenses'} />
