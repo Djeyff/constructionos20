@@ -73,7 +73,7 @@ export default async function ProjectsPage() {
                     </div>
                     <div className="flex items-center gap-3 mb-2">
                       <div className="flex-1 rounded-full h-2.5" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                        <div className={`h-2.5 rounded-full ${pct>=90?'bg-red-400':pct>=70?'bg-yellow-400':'bg-emerald-400'}`}
+                        <div className={`h-2.5 rounded-full ${t.pending<=0?'bg-blue-400':pct>=90?'bg-red-400':pct>=70?'bg-yellow-400':'bg-emerald-400'}`}
                           style={{ width: `${Math.min(pct,100)}%` }}></div>
                       </div>
                       <span className="text-sm font-bold" style={{ color: '#d4a853' }}>{pct}%</span>
