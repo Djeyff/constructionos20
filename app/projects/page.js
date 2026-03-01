@@ -32,6 +32,7 @@ export default async function ProjectsPage() {
     advByProject[projId].push({
       desc: getTitle(a), amount: getNumber(a,'Monto')||0,
       date: getDate(a,'Fecha'), paidBy: getSelect(a,'Pagado por')||'Jeff',
+      reembolsado: getSelect(a,'Reembolsado')||'Pendiente',
       notes: a.properties?.Notas?.rich_text?.[0]?.plain_text||'',
     });
   });
@@ -97,16 +98,21 @@ export default async function ProjectsPage() {
                               <span className="text-xs text-white">{a.desc}</span>
                               {a.date && <span className="text-xs" style={{ color: '#64748b' }}>{a.date}</span>}
                             </div>
-                            <span className="text-xs font-mono font-semibold" style={{ color: a.paidBy==='Jeff'?'#f87171':'#6ee7b7' }}>
-                              {fmt(a.amount)} DOP
-                            </span>
+                            <div className="flex items-center gap-2">
+                              {a.paidBy==='Jeff' && a.reembolsado==='Reembolsado' && (
+                                <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-900/50 text-emerald-300">✓ Reembolsado</span>
+                              )}
+                              <span className="text-xs font-mono font-semibold" style={{ color: a.paidBy==='Jeff' && a.reembolsado!=='Reembolsado' ? '#f87171' : '#6ee7b7', textDecoration: a.reembolsado==='Reembolsado' ? 'line-through' : 'none', opacity: a.reembolsado==='Reembolsado' ? 0.6 : 1 }}>
+                                {fmt(a.amount)} DOP
+                              </span>
+                            </div>
                           </div>
                         ))}
-                        {t.advances.filter(a=>a.paidBy==='Jeff').length > 0 && (
+                        {t.advances.filter(a=>a.paidBy==='Jeff' && a.reembolsado==='Pendiente').length > 0 && (
                           <div className="flex justify-between mt-2 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                             <span className="text-xs font-semibold" style={{ color: '#f87171' }}>⚠️ Client owes Jeff</span>
                             <span className="text-xs font-mono font-bold" style={{ color: '#f87171' }}>
-                              {fmt(t.advances.filter(a=>a.paidBy==='Jeff').reduce((s,a)=>s+a.amount,0))} DOP
+                              {fmt(t.advances.filter(a=>a.paidBy==='Jeff' && a.reembolsado==='Pendiente').reduce((s,a)=>s+a.amount,0))} DOP
                             </span>
                           </div>
                         )}
