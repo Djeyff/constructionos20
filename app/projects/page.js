@@ -22,7 +22,7 @@ export default async function ProjectsPage() {
       const projectId = getRelationId(exp, 'Project');
       if (projectId) {
         if (!expensesByProject[projectId]) {
-          expensesByProject[projectId] = { total: 0, count: 0, items: [] };
+          expensesByProject[projectId] = { total: 0, count: 0, items: [], latestDate: '' };
         }
         const amount = getNumber(exp, 'Amount') || 0;
         const desc = getTitle(exp) || '';
@@ -31,37 +31,76 @@ export default async function ProjectsPage() {
         expensesByProject[projectId].total += amount;
         expensesByProject[projectId].count += 1;
         expensesByProject[projectId].items.push({ desc, amount, date, status, kdriveUrl });
+        // Update latest date
+        if (date && (!expensesByProject[projectId].latestDate || date > expensesByProject[projectId].latestDate)) {
+          expensesByProject[projectId].latestDate = date;
+        }
       }
     }
   });
 
-  const projectData = projects.map(p => {
-    const projectId = p.id;
-    const expenseData = expensesByProject[projectId] || { total: 0, count: 0, items: [] };
-    return {
-      id: projectId,
-      name: getTitle(p), 
-      status: getSelect(p,'Status'), 
-      progress: getNumber(p,'Progress %')||0,
-      budget: getNumber(p,'Estimated Budget')||0, 
-      contract: getNumber(p,'Contract Value')||0,
-      committed: getNumber(p,'Committed Budget')||0,
-      totalSpent: expenseData.total,
-      expenseCount: expenseData.count,
-      expenses: expenseData.items,
-      start: getDate(p,'Start Date'), 
-      end: getDate(p,'End Date'), 
-      type: getSelect(p,'Project Type'),
-    };
-  }).sort((a,b) => {
-    if (a.expenseCount > 0 && b.expenseCount === 0) return -1;
-    if (a.expenseCount === 0 && b.expenseCount > 0) return 1;
-    if (a.expenseCount > 0 && b.expenseCount > 0) {
-      return b.totalSpent - a.totalSpent;
-    }
-    const order = ['On Site','Active','Mobilizing','Paused','Punch List','Bidding','Prospect','Completed','Closed'];
-    return order.indexOf(a.status) - order.indexOf(b.status);
-  });
+  // Separate active and archived projects
+  const activeStatuses = ['Active', 'On Site', 'Mobilizing', 'Punch List', 'Bidding', 'Prospect'];
+  const archivedStatuses = ['Completed', 'Closed', 'Paused'];
+
+  const activeProjects = projects
+    .filter(p => activeStatuses.includes(getSelect(p, 'Status') || ''))
+    .map(p => {
+      const projectId = p.id;
+      const expenseData = expensesByProject[projectId] || { total: 0, count: 0, items: [], latestDate: '' };
+      return {
+        id: projectId,
+        name: getTitle(p), 
+        status: getSelect(p,'Status'), 
+        progress: getNumber(p,'Progress %')||0,
+        budget: getNumber(p,'Estimated Budget')||0, 
+        contract: getNumber(p,'Contract Value')||0,
+        committed: getNumber(p,'Committed Budget')||0,
+        totalSpent: expenseData.total,
+        expenseCount: expenseData.count,
+        expenses: expenseData.items,
+        latestExpenseDate: expenseData.latestDate,
+        start: getDate(p,'Start Date'), 
+        end: getDate(p,'End Date'), 
+        type: getSelect(p,'Project Type'),
+      };
+    })
+    .sort((a, b) => {
+      if (a.expenseCount > 0 && b.expenseCount === 0) return -1;
+      if (a.expenseCount === 0 && b.expenseCount > 0) return 1;
+      if (a.expenseCount > 0 && b.expenseCount > 0) {
+        // Sort by most recent expense date descending
+        if (!a.latestExpenseDate) return 1;
+        if (!b.latestExpenseDate) return -1;
+        return b.latestExpenseDate.localeCompare(a.latestExpenseDate);
+      }
+      // Fallback to status order for projects without expenses
+      const order = ['On Site','Active','Mobilizing','Punch List','Bidding','Prospect'];
+      return order.indexOf(a.status) - order.indexOf(b.status);
+    });
+
+  const archivedProjects = projects
+    .filter(p => archivedStatuses.includes(getSelect(p, 'Status') || ''))
+    .map(p => {
+      const projectId = p.id;
+      const expenseData = expensesByProject[projectId] || { total: 0, count: 0, items: [], latestDate: '' };
+      return {
+        id: projectId,
+        name: getTitle(p), 
+        status: getSelect(p,'Status'), 
+        progress: getNumber(p,'Progress %')||0,
+        budget: getNumber(p,'Estimated Budget')||0, 
+        contract: getNumber(p,'Contract Value')||0,
+        committed: getNumber(p,'Committed Budget')||0,
+        totalSpent: expenseData.total,
+        expenseCount: expenseData.count,
+        expenses: expenseData.items,
+        latestExpenseDate: expenseData.latestDate,
+        start: getDate(p,'Start Date'), 
+        end: getDate(p,'End Date'), 
+        type: getSelect(p,'Project Type'),
+      };
+    });
 
   // Build advances by project ID
   const advByProject = {};
@@ -170,9 +209,9 @@ export default async function ProjectsPage() {
           <AddEntryModal defaultType="project" triggerLabel="+ Add Project" />
         </div>
 
-        {/* Project Cards */}
+        {/* Active Project Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          {projectData.map((p,i) => (
+          {activeProjects.map((p,i) => (
             <div key={i} className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -254,6 +293,85 @@ export default async function ProjectsPage() {
             </div>
           ))}
         </div>
+
+        {/* Archived Projects Section */}
+        {archivedProjects.length > 0 && (
+          <details className="mb-8">
+            <summary className="cursor-pointer text-lg font-semibold mb-4 text-white">
+              📦 Completed / Archived Projects ({archivedProjects.length})
+            </summary>
+            <div className="space-y-4">
+              {archivedProjects.map((p, i) => (
+                <details key={i} className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <summary className="cursor-pointer text-base font-bold text-white mb-2 list-none">
+                    {p.name} — Total: {fmt(p.totalSpent)} DOP
+                  </summary>
+                  <div className="mt-4 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    {p.type && <p className="text-xs mb-3" style={{ color: '#64748b' }}>{p.type} · {p.start||'No start'} → {p.end||'No end'}</p>}
+                    
+                    {/* Expandable Expenses for Archived */}
+                    {p.expenses.length > 0 && (
+                      <details className="mb-4">
+                        <summary className="cursor-pointer text-sm font-semibold mb-2" style={{ color: '#94a3b8' }}>
+                          📋 {p.expenses.length} expenses — view details
+                        </summary>
+                        <div className="mt-2 space-y-2">
+                          {p.expenses.map((exp, j) => (
+                            <div key={j} className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-white/5 last:border-b-0">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
+                                    exp.status === 'Pending Reimbursement' || exp.status === 'Reimbursed' 
+                                      ? 'bg-blue-900/50 text-blue-300' 
+                                      : 'bg-purple-900/50 text-purple-300'
+                                  }`}>
+                                    {exp.status === 'Pending Reimbursement' || exp.status === 'Reimbursed' ? '👤 Jeff' : '📋 Contador'}
+                                  </span>
+                                  {exp.date && <span className="text-xs" style={{ color: '#64748b' }}>{exp.date}</span>}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <a href="/expenses" className="text-sm font-medium text-blue-400 hover:text-blue-300 underline">
+                                    {exp.desc}
+                                  </a>
+                                  {exp.kdriveUrl && (
+                                    <a href={exp.kdriveUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-gray-300">
+                                      📎
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="mt-1 sm:mt-0 text-right">
+                                <p className="text-sm font-mono font-bold text-white">
+                                  {fmt(exp.amount)} DOP
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    )}
+
+                    {/* Budget/Contract/Committed for Archived */}
+                    <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                      <div className="rounded-lg py-2" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                        <p className="text-xs" style={{ color: '#64748b' }}>Budget</p>
+                        <p className="font-mono font-semibold text-white">{p.budget ? fmt(p.budget) : '—'}</p>
+                      </div>
+                      <div className="rounded-lg py-2" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                        <p className="text-xs" style={{ color: '#64748b' }}>Contract</p>
+                        <p className="font-mono font-semibold text-white">{p.contract ? fmt(p.contract) : '—'}</p>
+                      </div>
+                      <div className="rounded-lg py-2" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                        <p className="text-xs" style={{ color: '#64748b' }}>Committed</p>
+                        <p className="font-mono font-semibold text-white">{p.committed ? fmt(p.committed) : '—'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </details>
+              ))}
+            </div>
+          </details>
+        )}
 
       </main>
     </div>
