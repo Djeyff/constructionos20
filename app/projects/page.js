@@ -258,7 +258,9 @@ export default async function ProjectsPage() {
                               {exp.desc}
                             </a>
                             {exp.kdriveUrl && (
-                              <a href={exp.kdriveUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-gray-300">
+                              <a href={exp.kdriveUrl} target="_blank" rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs shrink-0"
+                                style={{ background: 'rgba(99,102,241,0.25)', color: '#818cf8' }}>
                                 📎
                               </a>
                             )}
@@ -334,7 +336,9 @@ export default async function ProjectsPage() {
                                     {exp.desc}
                                   </a>
                                   {exp.kdriveUrl && (
-                                    <a href={exp.kdriveUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-gray-300">
+                                    <a href={exp.kdriveUrl} target="_blank" rel="noopener noreferrer"
+                                      className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs shrink-0"
+                                      style={{ background: 'rgba(99,102,241,0.25)', color: '#818cf8' }}>
                                       📎
                                     </a>
                                   )}
