@@ -1,5 +1,5 @@
 import { getDB } from '@/lib/config';
-import { queryDB, buildNameMap, getTitle, getNumber, getSelect, getDate, getRelationId } from '@/lib/notion';
+import { queryDB, buildNameMap, getTitle, getNumber, getSelect, getDate, getRelationId, getUrl } from '@/lib/notion';
 import ConstructionNav from '@/components/ConstructionNav';
 import AddEntryModal from '@/components/AddEntryModal';
 import MonthFilter from '@/components/MonthFilter';
@@ -24,6 +24,7 @@ export default async function ExpensesPage({ searchParams }) {
     status: getSelect(e,'Status'), category: getSelect(e,'Category'), paidFrom: getSelect(e,'Paid From'),
     client: clientNames[getRelationId(e,'Client')] || '',
     project: projectNames[getRelationId(e,'Project')] || '',
+    kdriveUrl: getUrl(e,'kDrive') || null,
   }));
 
   // Filter by month
@@ -92,6 +93,13 @@ export default async function ExpensesPage({ searchParams }) {
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" style={{ background: 'rgba(212,168,83,0.1)', color: '#d4a853' }}>{e.category}</span>
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusColor(e.status)}`}>{e.status}</span>
                 <MarkReimbursedButton pageId={e.id} type="expense" currentStatus={e.status} />
+                {e.kdriveUrl && (
+                  <a href={e.kdriveUrl} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium"
+                    style={{ background: 'rgba(99,102,241,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }}>
+                    📎 Factura
+                  </a>
+                )}
               </div>
             </div>
           ))}
@@ -121,7 +129,16 @@ export default async function ExpensesPage({ searchParams }) {
                     <td className="py-2.5 px-4"><span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusColor(e.status)}`}>{e.status}</span></td>
                     <td className="py-2.5 px-4 text-right font-mono font-semibold text-white">{fmt(e.amount)}</td>
                     <td className="py-2.5 px-4">
-                      <MarkReimbursedButton pageId={e.id} type="expense" currentStatus={e.status} />
+                      <div className="flex items-center gap-2">
+                        <MarkReimbursedButton pageId={e.id} type="expense" currentStatus={e.status} />
+                        {e.kdriveUrl && (
+                          <a href={e.kdriveUrl} target="_blank" rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium"
+                            style={{ background: 'rgba(99,102,241,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }}>
+                            📎 Factura
+                          </a>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
