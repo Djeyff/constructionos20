@@ -1,5 +1,5 @@
 import { getDB } from '@/lib/config';
-import { queryDB, getTitle, getNumber, getSelect, getDate } from '@/lib/notion';
+import { queryDB, getTitle, getNumber, getSelect, getDate, getRelationId } from '@/lib/notion';
 import ConstructionNav from '@/components/ConstructionNav';
 import AddEntryModal from '@/components/AddEntryModal';
 
@@ -8,17 +8,52 @@ export const dynamic = 'force-dynamic';
 export default async function ProjectsPage() {
   const fmt = (n) => { const a=Math.abs(n||0); return (n<0?'-':'')+a.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2}); };
 
-  let projects=[], todoCosto=[], todoCostoAvances=[];
+  let projects=[], todoCosto=[], todoCostoAvances=[], expenses=[];
   try { const db=getDB('projects'); if(db) projects=await queryDB(db); } catch(e){}
   try { const db=getDB('todoCosto'); if(db) todoCosto=await queryDB(db); } catch(e){}
   try { const db=getDB('todoCostoAvances'); if(db) todoCostoAvances=await queryDB(db, null, [{property:'Fecha',direction:'descending'}]); } catch(e){}
+  try { const db=getDB('expenses'); if(db) expenses=await queryDB(db); } catch(e){}
 
-  const projectData = projects.map(p => ({
-    name: getTitle(p), status: getSelect(p,'Status'), progress: getNumber(p,'Progress %')||0,
-    budget: getNumber(p,'Estimated Budget')||0, contract: getNumber(p,'Contract Value')||0,
-    committed: getNumber(p,'Committed Budget')||0,
-    start: getDate(p,'Start Date'), end: getDate(p,'End Date'), type: getSelect(p,'Project Type'),
-  })).sort((a,b) => {
+  // Group expenses by project ID and sum amounts
+  const expensesByProject = {};
+  expenses.forEach(exp => {
+    const status = getSelect(exp, 'Status') || '';
+    if (['Pending Reimbursement', 'Reimbursed', 'Para Contador'].includes(status)) {
+      const projectId = getRelationId(exp, 'Project');
+      if (projectId) {
+        if (!expensesByProject[projectId]) {
+          expensesByProject[projectId] = { total: 0, count: 0 };
+        }
+        const amount = getNumber(exp, 'Amount') || 0;
+        expensesByProject[projectId].total += amount;
+        expensesByProject[projectId].count += 1;
+      }
+    }
+  });
+
+  const projectData = projects.map(p => {
+    const projectId = p.id;
+    const expenseData = expensesByProject[projectId] || { total: 0, count: 0 };
+    return {
+      id: projectId,
+      name: getTitle(p), 
+      status: getSelect(p,'Status'), 
+      progress: getNumber(p,'Progress %')||0,
+      budget: getNumber(p,'Estimated Budget')||0, 
+      contract: getNumber(p,'Contract Value')||0,
+      committed: getNumber(p,'Committed Budget')||0,
+      totalSpent: expenseData.total,
+      expenseCount: expenseData.count,
+      start: getDate(p,'Start Date'), 
+      end: getDate(p,'End Date'), 
+      type: getSelect(p,'Project Type'),
+    };
+  }).sort((a,b) => {
+    const hasDataA = a.totalSpent > 0 || a.budget > 0 || a.contract > 0;
+    const hasDataB = b.totalSpent > 0 || b.budget > 0 || b.contract > 0;
+    if (hasDataA !== hasDataB) {
+      return hasDataA ? -1 : 1;
+    }
     const order = ['On Site','Active','Mobilizing','Paused','Punch List','Bidding','Prospect','Completed','Closed'];
     return order.indexOf(a.status) - order.indexOf(b.status);
   });
@@ -135,7 +170,14 @@ export default async function ProjectsPage() {
           {projectData.map((p,i) => (
             <div key={i} className="rounded-xl p-5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-base font-bold text-white">{p.name}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-white">{p.name}</h3>
+                  {p.expenseCount > 0 && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-900/50 text-blue-200">
+                      📎 Facturas {p.expenseCount}
+                    </span>
+                  )}
+                </div>
                 <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${statusColor(p.status)}`}>{p.status}</span>
               </div>
               {p.type && <p className="text-xs mb-3" style={{ color: '#64748b' }}>{p.type} · {p.start||'No start'} → {p.end||'No end'}</p>}
@@ -146,7 +188,13 @@ export default async function ProjectsPage() {
                 </div>
                 <span className="text-sm font-bold" style={{ color: '#d4a853' }}>{p.progress}%</span>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="grid grid-cols-4 gap-2 text-center">
+                <div className="rounded-lg py-2" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                  <p className="text-xs" style={{ color: '#64748b' }}>Spent</p>
+                  <p className={`text-sm font-mono font-semibold ${p.totalSpent > 0 ? 'text-[#d4a853]' : 'text-gray-400'}`}>
+                    {p.totalSpent > 0 ? fmt(p.totalSpent) : '—'}
+                  </p>
+                </div>
                 <div className="rounded-lg py-2" style={{ background: 'rgba(255,255,255,0.03)' }}>
                   <p className="text-xs" style={{ color: '#64748b' }}>Budget</p>
                   <p className="text-sm font-mono font-semibold text-white">{p.budget ? fmt(p.budget) : '—'}</p>
