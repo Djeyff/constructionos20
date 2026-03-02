@@ -14,7 +14,7 @@ export default async function ProjectsPage() {
   try { const db=getDB('todoCostoAvances'); if(db) todoCostoAvances=await queryDB(db, null, [{property:'Fecha',direction:'descending'}]); } catch(e){}
   try { const db=getDB('expenses'); if(db) expenses=await queryDB(db); } catch(e){}
 
-  // Group expenses by project ID and sum amounts
+  // Group expenses by project ID with full details
   const expensesByProject = {};
   expenses.forEach(exp => {
     const status = getSelect(exp, 'Status') || '';
@@ -22,18 +22,22 @@ export default async function ProjectsPage() {
       const projectId = getRelationId(exp, 'Project');
       if (projectId) {
         if (!expensesByProject[projectId]) {
-          expensesByProject[projectId] = { total: 0, count: 0 };
+          expensesByProject[projectId] = { total: 0, count: 0, items: [] };
         }
         const amount = getNumber(exp, 'Amount') || 0;
+        const desc = getTitle(exp) || '';
+        const date = getDate(exp, 'Date') || '';
+        const kdriveUrl = exp.properties?.kDrive?.url || '';
         expensesByProject[projectId].total += amount;
         expensesByProject[projectId].count += 1;
+        expensesByProject[projectId].items.push({ desc, amount, date, status, kdriveUrl });
       }
     }
   });
 
   const projectData = projects.map(p => {
     const projectId = p.id;
-    const expenseData = expensesByProject[projectId] || { total: 0, count: 0 };
+    const expenseData = expensesByProject[projectId] || { total: 0, count: 0, items: [] };
     return {
       id: projectId,
       name: getTitle(p), 
@@ -44,15 +48,16 @@ export default async function ProjectsPage() {
       committed: getNumber(p,'Committed Budget')||0,
       totalSpent: expenseData.total,
       expenseCount: expenseData.count,
+      expenses: expenseData.items,
       start: getDate(p,'Start Date'), 
       end: getDate(p,'End Date'), 
       type: getSelect(p,'Project Type'),
     };
   }).sort((a,b) => {
-    const hasDataA = a.totalSpent > 0 || a.budget > 0 || a.contract > 0;
-    const hasDataB = b.totalSpent > 0 || b.budget > 0 || b.contract > 0;
-    if (hasDataA !== hasDataB) {
-      return hasDataA ? -1 : 1;
+    if (a.expenseCount > 0 && b.expenseCount === 0) return -1;
+    if (a.expenseCount === 0 && b.expenseCount > 0) return 1;
+    if (a.expenseCount > 0 && b.expenseCount > 0) {
+      return b.totalSpent - a.totalSpent;
     }
     const order = ['On Site','Active','Mobilizing','Paused','Punch List','Bidding','Prospect','Completed','Closed'];
     return order.indexOf(a.status) - order.indexOf(b.status);
@@ -181,31 +186,69 @@ export default async function ProjectsPage() {
                 <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${statusColor(p.status)}`}>{p.status}</span>
               </div>
               {p.type && <p className="text-xs mb-3" style={{ color: '#64748b' }}>{p.type} · {p.start||'No start'} → {p.end||'No end'}</p>}
-              <div className="flex items-center gap-3 mb-3">
-                <div className="flex-1 rounded-full h-2.5" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                  <div className={`h-2.5 rounded-full ${p.progress>=80?'bg-emerald-400':p.progress>=40?'bg-yellow-400':'bg-blue-400'}`}
-                    style={{ width: `${Math.min(p.progress,100)}%` }}></div>
-                </div>
-                <span className="text-sm font-bold" style={{ color: '#d4a853' }}>{p.progress}%</span>
+
+              {/* Total Spent - Prominent */}
+              <div className="mb-4 p-3 rounded-lg" style={{ background: 'rgba(212, 168, 83, 0.1)', border: '1px solid rgba(212, 168, 83, 0.3)' }}>
+                <p className="text-2xl font-bold" style={{ color: '#d4a853' }}>
+                  Total: {fmt(p.totalSpent)} DOP
+                </p>
               </div>
-              <div className="grid grid-cols-4 gap-2 text-center">
-                <div className="rounded-lg py-2" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                  <p className="text-xs" style={{ color: '#64748b' }}>Spent</p>
-                  <p className={`text-sm font-mono font-semibold ${p.totalSpent > 0 ? 'text-[#d4a853]' : 'text-gray-400'}`}>
-                    {p.totalSpent > 0 ? fmt(p.totalSpent) : '—'}
-                  </p>
-                </div>
+
+              {/* Expandable Expenses */}
+              {p.expenses.length > 0 && (
+                <details className="mb-4">
+                  <summary className="cursor-pointer text-sm font-semibold mb-2" style={{ color: '#94a3b8' }}>
+                    📋 {p.expenses.length} expenses — view details
+                  </summary>
+                  <div className="mt-2 space-y-2">
+                    {p.expenses.map((exp, j) => (
+                      <div key={j} className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-white/5 last:border-b-0">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
+                              exp.status === 'Pending Reimbursement' || exp.status === 'Reimbursed' 
+                                ? 'bg-blue-900/50 text-blue-300' 
+                                : 'bg-purple-900/50 text-purple-300'
+                            }`}>
+                              {exp.status === 'Pending Reimbursement' || exp.status === 'Reimbursed' ? '👤 Jeff' : '📋 Contador'}
+                            </span>
+                            {exp.date && <span className="text-xs" style={{ color: '#64748b' }}>{exp.date}</span>}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <a href="/expenses" className="text-sm font-medium text-blue-400 hover:text-blue-300 underline">
+                              {exp.desc}
+                            </a>
+                            {exp.kdriveUrl && (
+                              <a href={exp.kdriveUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-gray-300">
+                                📎
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                        <div className="mt-1 sm:mt-0 text-right">
+                          <p className="text-sm font-mono font-bold text-white">
+                            {fmt(exp.amount)} DOP
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
+
+              {/* Budget/Contract/Committed - Secondary */}
+              <div className="grid grid-cols-3 gap-2 text-center text-sm">
                 <div className="rounded-lg py-2" style={{ background: 'rgba(255,255,255,0.03)' }}>
                   <p className="text-xs" style={{ color: '#64748b' }}>Budget</p>
-                  <p className="text-sm font-mono font-semibold text-white">{p.budget ? fmt(p.budget) : '—'}</p>
+                  <p className="font-mono font-semibold text-white">{p.budget ? fmt(p.budget) : '—'}</p>
                 </div>
                 <div className="rounded-lg py-2" style={{ background: 'rgba(255,255,255,0.03)' }}>
                   <p className="text-xs" style={{ color: '#64748b' }}>Contract</p>
-                  <p className="text-sm font-mono font-semibold text-white">{p.contract ? fmt(p.contract) : '—'}</p>
+                  <p className="font-mono font-semibold text-white">{p.contract ? fmt(p.contract) : '—'}</p>
                 </div>
                 <div className="rounded-lg py-2" style={{ background: 'rgba(255,255,255,0.03)' }}>
                   <p className="text-xs" style={{ color: '#64748b' }}>Committed</p>
-                  <p className="text-sm font-mono font-semibold text-white">{p.committed ? fmt(p.committed) : '—'}</p>
+                  <p className="font-mono font-semibold text-white">{p.committed ? fmt(p.committed) : '—'}</p>
                 </div>
               </div>
             </div>
