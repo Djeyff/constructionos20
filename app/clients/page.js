@@ -17,7 +17,14 @@ export default async function ClientsPage() {
   try { expenses=await queryDB(getDB('expenses'),{property:'Status',select:{equals:'Pending Reimbursement'}}); } catch(e){}
   try { timesheets=await queryDB(getDB('timesheets'),{property:'Status',select:{equals:'Pending Reimbursement'}}); } catch(e){}
   try { tcProjects=await queryDB(getDB('todoCosto')); } catch(e){}
-  try { tcAdvances=await queryDB(getDB('todoCostoAvances'),{property:'Pagado por',select:{equals:'Jeff'}}); } catch(e){}
+  try {
+    tcAdvances = await queryDB(getDB('todoCostoAvances'), {
+      and: [
+        { property: 'Pagado por', select: { equals: 'Jeff' } },
+        { property: 'Reembolsado', select: { does_not_equal: 'Reembolsado' } },
+      ]
+    });
+  } catch(e){}
 
   // Build TC project map: id → { name, clientId, status }
   const tcProjectMap = {};
