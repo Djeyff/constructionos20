@@ -102,37 +102,91 @@ export default async function TimesheetsPage({ searchParams }) {
           <WorkerFilter workers={workerList.map(([name, s]) => ({ name, id: s.id, hours: s.hours, unpaid: s.unpaid, count: s.count }))} selected={selectedWorker} />
         </div>
 
-        {/* Worker Summary — grouped by client (when filtered) */}
-        {selectedWorker && Object.keys(byClient).length > 0 && (
-          <div className="rounded-xl overflow-hidden mb-6" style={{ background: 'rgba(251,191,36,0.04)', border: '1px solid rgba(251,191,36,0.12)' }}>
-            <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(251,191,36,0.1)' }}>
-              <h3 className="text-lg font-semibold text-white">💰 {selectedName} — What You Owe</h3>
+        {/* ═══ SECTION 1: What Jeff Owes This Worker ═══ */}
+        {selectedWorker && (
+          <div className="rounded-xl overflow-hidden mb-4" style={{ background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.15)' }}>
+            <div className="px-4 sm:px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
+              <div>
+                <h3 className="text-base sm:text-lg font-semibold text-white">👷 Pendiente de Pago a {selectedName}</h3>
+                <p className="text-xs mt-0.5" style={{ color: '#94a3b8' }}>Lo que Jeff le debe al trabajador</p>
+              </div>
               <span className="text-lg font-bold text-red-400 font-mono">{fmt(totalUnpaid)} DOP</span>
             </div>
-            {Object.entries(byClient).sort((a,b) => b[1].unpaid - a[1].unpaid).map(([client, info]) => (
-              <div key={client}>
-                <div className="px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-1" style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                  <span className="text-sm font-bold text-white">🏢 {client}</span>
-                  <div className="flex gap-3 text-xs sm:text-sm font-mono">
-                    <span style={{ color: '#d4a853' }}>{info.hours}h</span>
-                    <span className="text-white">{fmt(info.amount)} total</span>
-                    {info.unpaid > 0 && <span className="text-red-400 font-bold">{fmt(info.unpaid)} unpaid</span>}
-                  </div>
-                </div>
-                {info.items.filter(t=>t.empPay==='Not Paid').map((t,i) => (
-                  <div key={i} className="px-4 sm:px-6 pl-6 sm:pl-10 py-1.5 flex items-center justify-between gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                    <p className="text-xs flex-1 min-w-0" style={{ color: '#94a3b8' }}>{t.date} · {t.task} · {t.hours}h</p>
-                    <span className={`text-xs font-mono shrink-0 ${t.amount > 0 ? 'text-red-400' : 'text-gray-600'}`}>{t.amount > 0 ? fmt(t.amount) : '—'}</span>
+            {totalUnpaid > 0 ? (
+              <>
+                {Object.entries(byClient).filter(([_,info]) => info.unpaid > 0).sort((a,b) => b[1].unpaid - a[1].unpaid).map(([client, info]) => (
+                  <div key={client}>
+                    <div className="px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-1" style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <span className="text-sm font-bold text-white">🏢 {client}</span>
+                      <span className="text-sm font-mono font-bold text-red-400">{fmt(info.unpaid)}</span>
+                    </div>
+                    {info.items.filter(t=>t.empPay==='Not Paid').map((t,i) => (
+                      <div key={i} className="px-4 sm:px-6 pl-6 sm:pl-10 py-1.5 flex items-center justify-between gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                        <p className="text-xs flex-1 min-w-0" style={{ color: '#94a3b8' }}>{t.date} · {t.task} · {t.hours}h</p>
+                        <span className="text-xs font-mono shrink-0 text-red-400">{fmt(t.amount)}</span>
+                      </div>
+                    ))}
                   </div>
                 ))}
+                <div className="px-4 sm:px-6 py-3 flex items-center justify-between" style={{ background: 'rgba(239,68,68,0.06)', borderTop: '2px solid rgba(239,68,68,0.15)' }}>
+                  <span className="text-sm font-bold text-red-400">TOTAL A PAGAR</span>
+                  <span className="text-lg font-bold text-red-400 font-mono">{fmt(totalUnpaid)} DOP</span>
+                </div>
+              </>
+            ) : (
+              <div className="px-4 sm:px-6 py-4 text-center">
+                <span className="text-sm text-emerald-400">✅ Todo al día — sin pagos pendientes</span>
               </div>
-            ))}
-            <div className="px-6 py-3 flex items-center justify-between" style={{ background: 'rgba(212,168,83,0.06)', borderTop: '2px solid rgba(212,168,83,0.15)' }}>
-              <span className="text-sm font-bold" style={{ color: '#d4a853' }}>GRAND TOTAL OWED</span>
-              <span className="text-lg font-bold text-red-400 font-mono">{fmt(totalUnpaid)} DOP</span>
-            </div>
+            )}
           </div>
         )}
+
+        {/* ═══ SECTION 2: What Clients Owe Jeff (for this worker's labor) ═══ */}
+        {selectedWorker && Object.keys(byClient).length > 0 && (() => {
+          const pendingReimb = data.filter(t => t.status === 'Pending Reimbursement');
+          const byClientReimb = {};
+          pendingReimb.forEach(t => {
+            const c = t.client || 'Sin Cliente';
+            if (!byClientReimb[c]) byClientReimb[c] = { items: [], hours: 0, amount: 0 };
+            byClientReimb[c].items.push(t);
+            byClientReimb[c].hours += t.hours;
+            byClientReimb[c].amount += t.amount;
+          });
+          const totalReimb = pendingReimb.reduce((s,t) => s + t.amount, 0);
+          if (totalReimb === 0) return null;
+          return (
+            <div className="rounded-xl overflow-hidden mb-6" style={{ background: 'rgba(251,191,36,0.04)', border: '1px solid rgba(251,191,36,0.12)' }}>
+              <div className="px-4 sm:px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(251,191,36,0.1)' }}>
+                <div>
+                  <h3 className="text-base sm:text-lg font-semibold text-white">📋 Reembolsos Pendientes — {selectedName}</h3>
+                  <p className="text-xs mt-0.5" style={{ color: '#94a3b8' }}>Lo que los clientes te deben por su trabajo</p>
+                </div>
+                <span className="text-lg font-bold font-mono" style={{ color: '#d4a853' }}>{fmt(totalReimb)} DOP</span>
+              </div>
+              {Object.entries(byClientReimb).sort((a,b) => b[1].amount - a[1].amount).map(([client, info]) => (
+                <div key={client}>
+                  <div className="px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-1" style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                    <span className="text-sm font-bold text-white">🏢 {client}</span>
+                    <div className="flex gap-3 text-xs sm:text-sm font-mono">
+                      <span style={{ color: '#d4a853' }}>{info.hours}h</span>
+                      <span style={{ color: '#d4a853' }}>{fmt(info.amount)}</span>
+                    </div>
+                  </div>
+                  {info.items.map((t,i) => (
+                    <div key={i} className="px-4 sm:px-6 pl-6 sm:pl-10 py-1.5 flex items-center justify-between gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                      <p className="text-xs flex-1 min-w-0" style={{ color: '#94a3b8' }}>{t.date} · {t.task} · {t.hours}h</p>
+                      <span className="text-xs font-mono shrink-0" style={{ color: '#d4a853' }}>{fmt(t.amount)}</span>
+                    </div>
+                  ))}
+                </div>
+              ))}
+              <div className="px-4 sm:px-6 py-3 flex items-center justify-between" style={{ background: 'rgba(212,168,83,0.06)', borderTop: '2px solid rgba(212,168,83,0.15)' }}>
+                <span className="text-sm font-bold" style={{ color: '#d4a853' }}>TOTAL REEMBOLSOS</span>
+                <span className="text-lg font-bold font-mono" style={{ color: '#d4a853' }}>{fmt(totalReimb)} DOP</span>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Mobile Cards */}
         <div className="sm:hidden space-y-2">
