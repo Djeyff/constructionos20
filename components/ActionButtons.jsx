@@ -46,36 +46,45 @@ export function MarkPaidButton({ pageId, currentStatus }) {
   );
 }
 
-// ✓ Reimbursed / ↩ Pending toggle
+// Status cycle: Pending Reimbursement → Submitted, pending transfer → Reimbursed → Pending Reimbursement
+const STATUS_CYCLE = ['Pending Reimbursement', 'Submitted, pending transfer', 'Reimbursed'];
+
 export function MarkReimbursedButton({ pageId, type, currentStatus }) {
   const [status, setStatus] = useState(currentStatus || 'Pending Reimbursement');
   const [loading, setLoading] = useState(false);
   if (!pageId) return null;
-  if (status !== 'Reimbursed' && status !== 'Pending Reimbursement') return null;
+  if (!STATUS_CYCLE.includes(status)) return null;
 
-  const isReimbursed = status === 'Reimbursed';
+  const currentIdx = STATUS_CYCLE.indexOf(status);
+  const nextStatus = STATUS_CYCLE[(currentIdx + 1) % STATUS_CYCLE.length];
 
   const handleClick = async (e) => {
     e.preventDefault(); e.stopPropagation(); setLoading(true);
     try {
-      if (isReimbursed) {
-        await reverseStatus(pageId, 'Status', 'Pending Reimbursement');
-        setStatus('Pending Reimbursement');
-      } else {
+      if (nextStatus === 'Reimbursed') {
         await callApi('/api/mark-reimbursed', { pageId, type });
-        setStatus('Reimbursed');
+      } else {
+        await reverseStatus(pageId, 'Status', nextStatus);
       }
+      setStatus(nextStatus);
     } catch { alert('Failed'); }
     setLoading(false);
   };
 
+  const btnStyle = status === 'Reimbursed'
+    ? { backgroundColor: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }
+    : status === 'Submitted, pending transfer'
+    ? { backgroundColor: 'rgba(59,130,246,0.15)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.3)' }
+    : { backgroundColor: 'rgba(74,222,128,0.15)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.25)' };
+
+  const btnLabel = status === 'Reimbursed' ? '↩ Pending'
+    : status === 'Submitted, pending transfer' ? '✓ Reimbursed'
+    : '📨 Submitted';
+
   return (
     <button onClick={handleClick} disabled={loading}
       className="px-2 py-0.5 text-[10px] font-medium rounded transition-colors disabled:opacity-50 min-h-[28px] whitespace-nowrap"
-      style={isReimbursed
-        ? { backgroundColor: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }
-        : { backgroundColor: 'rgba(74,222,128,0.15)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.25)' }
-      }
-    >{loading ? '⏳' : isReimbursed ? '↩ Pending' : '✓ Reimbursed'}</button>
+      style={btnStyle}
+    >{loading ? '⏳' : btnLabel}</button>
   );
 }

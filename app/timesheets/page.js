@@ -72,6 +72,7 @@ export default async function TimesheetsPage({ searchParams }) {
   };
   const statusColor = (s) => {
     if(s==='Reimbursed'||s==='Paid by Client') return 'bg-emerald-500/20 text-emerald-400';
+    if(s==='Submitted, pending transfer') return 'bg-blue-500/20 text-blue-400';
     if(s==='Pending Reimbursement'||s==='Pending Client Payment') return 'bg-amber-500/20 text-amber-400';
     return 'bg-gray-500/20 text-gray-400';
   };
