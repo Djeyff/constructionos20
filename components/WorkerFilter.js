@@ -1,12 +1,20 @@
 'use client';
 
-export default function WorkerFilter({ workers, selected }) {
+export default function WorkerFilter({ workers, selected, extraParams }) {
   const fmt = (n) => Math.abs(n||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+
+  const buildHref = (workerId) => {
+    const params = new URLSearchParams(extraParams || {});
+    if (workerId) params.set('worker', workerId);
+    else params.delete('worker');
+    const qs = params.toString();
+    return qs ? `/timesheets?${qs}` : '/timesheets';
+  };
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
       {workers.map(w => (
-        <a key={w.id || w.name} href={w.id ? `/timesheets?worker=${w.id}` : '/timesheets'}
+        <a key={w.id || w.name} href={buildHref(w.id)}
           className="rounded-lg p-3 transition-all cursor-pointer"
           style={w.id === selected
             ? { background: 'linear-gradient(135deg, #d4a853, #c49a45)', color: '#0f1a2e' }

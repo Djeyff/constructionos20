@@ -3,6 +3,7 @@ import { queryDB, buildNameMap, getTitle, getNumber, getSelect, getDate, getRela
 import ConstructionNav from '@/components/ConstructionNav';
 import AddEntryModal from '@/components/AddEntryModal';
 import WorkerFilter from '@/components/WorkerFilter';
+import ClientFilter from '@/components/ClientFilter';
 import { MarkPaidButton, MarkReimbursedButton } from '@/components/ActionButtons';
 
 export const dynamic = 'force-dynamic';
@@ -11,6 +12,7 @@ export default async function TimesheetsPage({ searchParams }) {
   const fmt = (n) => { const a=Math.abs(n||0); return (n<0?'-':'')+a.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2}); };
   const params = await searchParams;
   const selectedWorker = params?.worker || null;
+  const selectedClient = params?.client || null;
 
   let timesheets=[];
   let clientNames={}, peopleNames={}, projectNames={};
@@ -42,8 +44,13 @@ export default async function TimesheetsPage({ searchParams }) {
   });
   const workerList = Object.entries(workerStats).sort((a,b) => b[1].unpaid - a[1].unpaid);
 
+  // Unique clients for filter
+  const uniqueClients = [...new Set(allData.map(t => t.client).filter(Boolean))].sort();
+
   // Filter data
-  const data = selectedWorker ? allData.filter(t => t.workerId === selectedWorker) : allData;
+  let data = allData;
+  if (selectedWorker) data = data.filter(t => t.workerId === selectedWorker);
+  if (selectedClient) data = data.filter(t => t.client === selectedClient);
 
   const totalHours = data.reduce((s,t)=>s+t.hours,0);
   const totalAmount = data.reduce((s,t)=>s+t.amount,0);
@@ -84,7 +91,7 @@ export default async function TimesheetsPage({ searchParams }) {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
             <h2 className="text-2xl font-bold text-white">Timesheets</h2>
-            {selectedName && <p className="text-sm mt-1" style={{ color: '#d4a853' }}>Filtered: {selectedName}</p>}
+            {(selectedName || selectedClient) && <p className="text-sm mt-1" style={{ color: '#d4a853' }}>Filtered: {[selectedName, selectedClient].filter(Boolean).join(' · ')}</p>}
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <Stat label="Hours" value={`${totalHours}h`} color="#d4a853" />
@@ -95,12 +102,17 @@ export default async function TimesheetsPage({ searchParams }) {
         </div>
 
         {/* Worker Selector */}
-        <div className="rounded-xl p-4 mb-6" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="rounded-xl p-4 mb-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm font-semibold text-white">👷 Filter by Worker</p>
-            {selectedWorker && <a href="/timesheets" className="text-xs px-3 py-1 rounded-lg" style={{ color: '#d4a853', background: 'rgba(212,168,83,0.1)' }}>Show All</a>}
+            {selectedWorker && <a href={selectedClient ? `/timesheets?client=${encodeURIComponent(selectedClient)}` : '/timesheets'} className="text-xs px-3 py-1 rounded-lg" style={{ color: '#d4a853', background: 'rgba(212,168,83,0.1)' }}>Clear Worker</a>}
           </div>
-          <WorkerFilter workers={workerList.map(([name, s]) => ({ name, id: s.id, hours: s.hours, unpaid: s.unpaid, count: s.count }))} selected={selectedWorker} />
+          <WorkerFilter workers={workerList.map(([name, s]) => ({ name, id: s.id, hours: s.hours, unpaid: s.unpaid, count: s.count }))} selected={selectedWorker} extraParams={selectedClient ? { client: selectedClient } : {}} />
+        </div>
+
+        {/* Client Filter */}
+        <div className="rounded-xl p-4 mb-6" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <ClientFilter basePath="/timesheets" clients={uniqueClients} selected={selectedClient} extraParams={selectedWorker ? { worker: selectedWorker } : {}} />
         </div>
 
         {/* ═══ SECTION 1: What Jeff Owes This Worker ═══ */}
