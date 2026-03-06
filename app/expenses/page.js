@@ -44,13 +44,17 @@ export default async function ExpensesPage({ searchParams }) {
   const totalPending = pendingReimb.reduce((s,e)=>s+e.amount,0);
   const submittedItems = data.filter(e=>e.status==='Submitted - Pending Transfer');
   const totalSubmitted = submittedItems.reduce((s,e)=>s+e.amount,0);
+  const contadorPending = data.filter(e=>e.status==='Para Contador');
+  const contadorSubmitted = data.filter(e=>e.status==='Submitted to Contador');
+  const totalContadorPending = contadorPending.reduce((s,e)=>s+e.amount,0);
 
   const statusColor = (s) => {
     if(s==='Pending Reimbursement') return 'bg-red-500/20 text-red-400';
     if(s==='Submitted - Pending Transfer') return 'bg-blue-500/20 text-blue-400';
     if(s==='Reimbursed') return 'bg-emerald-500/20 text-emerald-400';
     if(s==='Paid') return 'bg-blue-500/20 text-blue-400';
-    if(s==='Para Contador') return 'bg-purple-500/20 text-purple-400';
+    if(s==='Para Contador') return 'bg-yellow-500/20 text-yellow-400';
+    if(s==='Submitted to Contador') return 'bg-purple-500/20 text-purple-400';
     return 'bg-gray-500/20 text-gray-400';
   };
 
@@ -75,6 +79,13 @@ export default async function ExpensesPage({ searchParams }) {
               <div className="rounded-lg px-3 py-1.5 sm:px-4 sm:py-2" style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)' }}>
                 <span className="text-xs text-blue-400">Submitted</span>
                 <p className="text-sm sm:text-lg font-bold text-blue-400 font-mono">{fmt(totalSubmitted)} <span className="text-xs font-normal" style={{ color: '#64748b' }}>DOP</span></p>
+              </div>
+            )}
+            {contadorPending.length > 0 && (
+              <div className="rounded-lg px-3 py-1.5 sm:px-4 sm:py-2" style={{ background: 'rgba(234,179,8,0.05)', border: '1px solid rgba(234,179,8,0.15)' }}>
+                <span className="text-xs text-yellow-400">🧾 Para Contador</span>
+                <p className="text-sm sm:text-lg font-bold text-yellow-400 font-mono">{fmt(totalContadorPending)} <span className="text-xs font-normal" style={{ color: '#64748b' }}>DOP</span></p>
+                <span className="text-xs" style={{ color: '#64748b' }}>{contadorPending.length} pending · {contadorSubmitted.length} sent</span>
               </div>
             )}
             <AddEntryModal defaultType="expense" triggerLabel="+ Add Expense" />
