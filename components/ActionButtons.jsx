@@ -46,8 +46,8 @@ export function MarkPaidButton({ pageId, currentStatus }) {
   );
 }
 
-// Status cycle: Pending Reimbursement → Submitted, pending transfer → Reimbursed → Pending Reimbursement
-const STATUS_CYCLE = ['Pending Reimbursement', 'Submitted, pending transfer', 'Reimbursed'];
+// Status cycle: Pending Reimbursement → Submitted - Pending Transfer → Reimbursed → Pending Reimbursement
+const STATUS_CYCLE = ['Pending Reimbursement', 'Submitted - Pending Transfer', 'Reimbursed'];
 
 export function MarkReimbursedButton({ pageId, type, currentStatus }) {
   const [status, setStatus] = useState(currentStatus || 'Pending Reimbursement');
@@ -73,12 +73,12 @@ export function MarkReimbursedButton({ pageId, type, currentStatus }) {
 
   const btnStyle = status === 'Reimbursed'
     ? { backgroundColor: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }
-    : status === 'Submitted, pending transfer'
+    : status === 'Submitted - Pending Transfer'
     ? { backgroundColor: 'rgba(59,130,246,0.15)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.3)' }
     : { backgroundColor: 'rgba(74,222,128,0.15)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.25)' };
 
   const btnLabel = status === 'Reimbursed' ? '↩ Pending'
-    : status === 'Submitted, pending transfer' ? '✓ Reimbursed'
+    : status === 'Submitted - Pending Transfer' ? '✓ Reimbursed'
     : '📨 Submitted';
 
   return (

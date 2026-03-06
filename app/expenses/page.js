@@ -42,12 +42,12 @@ export default async function ExpensesPage({ searchParams }) {
   const total = data.reduce((s,e)=>s+e.amount,0);
   const pendingReimb = data.filter(e=>e.status==='Pending Reimbursement');
   const totalPending = pendingReimb.reduce((s,e)=>s+e.amount,0);
-  const submittedItems = data.filter(e=>e.status==='Submitted, pending transfer');
+  const submittedItems = data.filter(e=>e.status==='Submitted - Pending Transfer');
   const totalSubmitted = submittedItems.reduce((s,e)=>s+e.amount,0);
 
   const statusColor = (s) => {
     if(s==='Pending Reimbursement') return 'bg-red-500/20 text-red-400';
-    if(s==='Submitted, pending transfer') return 'bg-blue-500/20 text-blue-400';
+    if(s==='Submitted - Pending Transfer') return 'bg-blue-500/20 text-blue-400';
     if(s==='Reimbursed') return 'bg-emerald-500/20 text-emerald-400';
     if(s==='Paid') return 'bg-blue-500/20 text-blue-400';
     if(s==='Para Contador') return 'bg-purple-500/20 text-purple-400';
@@ -89,7 +89,7 @@ export default async function ExpensesPage({ searchParams }) {
         {/* Mobile Cards */}
         <div className="sm:hidden space-y-2">
           {data.map((e,i) => (
-            <div key={i} className="rounded-lg p-3" style={{ background: e.status==='Pending Reimbursement' ? 'rgba(239,68,68,0.06)' : e.status==='Submitted, pending transfer' ? 'rgba(59,130,246,0.06)' : 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div key={i} className="rounded-lg p-3" style={{ background: e.status==='Pending Reimbursement' ? 'rgba(239,68,68,0.06)' : e.status==='Submitted - Pending Transfer' ? 'rgba(59,130,246,0.06)' : 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
               <div className="flex items-start justify-between gap-2 mb-1">
                 <p className="text-sm font-medium text-white flex-1">{e.desc}</p>
                 <span className="text-sm font-mono font-bold text-white shrink-0">{fmt(e.amount)}</span>
@@ -126,7 +126,7 @@ export default async function ExpensesPage({ searchParams }) {
               <tbody>
                 {data.map((e,i) => (
                   <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-                    className={e.status==='Pending Reimbursement' ? 'bg-red-500/5' : e.status==='Submitted, pending transfer' ? 'bg-blue-500/5' : ''}>
+                    className={e.status==='Pending Reimbursement' ? 'bg-red-500/5' : e.status==='Submitted - Pending Transfer' ? 'bg-blue-500/5' : ''}>
                     <td className="py-2.5 px-4 whitespace-nowrap" style={{ color: '#94a3b8' }}>{e.date||'—'}</td>
                     <td className="py-2.5 px-4 text-white font-medium">{e.desc}</td>
                     <td className="py-2.5 px-4">

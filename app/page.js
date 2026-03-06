@@ -76,9 +76,9 @@ export default async function ConstructionDashboard({ searchParams }) {
   const totalPendingTsPay = pendingTsPay.reduce((s,t)=>s+t.amount,0);
   const pendingTsReimb = allTimesheets.filter(t=>t.status==='Pending Reimbursement');
   const totalPendingTsReimb = pendingTsReimb.reduce((s,t)=>s+t.amount,0);
-  const submittedExp = allExpenses.filter(e=>e.status==='Submitted, pending transfer');
+  const submittedExp = allExpenses.filter(e=>e.status==='Submitted - Pending Transfer');
   const totalSubmittedExp = submittedExp.reduce((s,e)=>s+e.amount,0);
-  const submittedTs = allTimesheets.filter(t=>t.status==='Submitted, pending transfer');
+  const submittedTs = allTimesheets.filter(t=>t.status==='Submitted - Pending Transfer');
   const totalSubmittedTs = submittedTs.reduce((s,t)=>s+t.amount,0);
   const totalSubmitted = totalSubmittedExp + totalSubmittedTs;
 
