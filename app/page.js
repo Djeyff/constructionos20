@@ -82,6 +82,12 @@ export default async function ConstructionDashboard({ searchParams }) {
   const totalSubmittedTs = submittedTs.reduce((s,t)=>s+t.amount,0);
   const totalSubmitted = totalSubmittedExp + totalSubmittedTs;
 
+  // Para Contador (a crédito invoices)
+  const contadorPending = allExpenses.filter(e=>e.status==='Para Contador');
+  const contadorSubmitted = allExpenses.filter(e=>e.status==='Submitted to Contador');
+  const totalContadorPending = contadorPending.reduce((s,e)=>s+e.amount,0);
+  const totalContadorAll = totalContadorPending + contadorSubmitted.reduce((s,e)=>s+e.amount,0);
+
   const projectData = projects.map(p => ({
     name: getTitle(p), status: getSelect(p,'Status'), progress: getNumber(p,'Progress %')||0,
     budget: getNumber(p,'Estimated Budget')||0,
@@ -185,7 +191,8 @@ export default async function ConstructionDashboard({ searchParams }) {
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           <KPI icon="💰" label="Cash Position" value={`${fmt(cashPositionTotal)} DOP`} color="red" sub="Te deben →" href="/cashflow" />
           <KPI icon="💸" label="Pending Reimbursement" value={`${fmt(totalPendingReimb+totalPendingTsReimb)} DOP`} color="red" sub={`${pendingReimb.length} exp + ${pendingTsReimb.length} ts`} href="/clients" />
-          {totalSubmitted > 0 && <KPI icon="📨" label="Submitted" value={`${fmt(totalSubmitted)} DOP`} color="blue" sub={`${submittedExp.length} exp + ${submittedTs.length} ts — awaiting transfer`} href="/expenses" />}
+          {totalSubmitted > 0 && <KPI icon="📨" label="Submitted" value={`${fmt(totalSubmitted)} DOP`} color="blue" sub={`${submittedExp.length} exp + ${submittedTs.length} ts — awaiting transfer`} href="/expenses?filter=submitted" />}
+          <KPI icon="🧾" label="Para Contador" value={`${fmt(totalContadorPending)} DOP`} color={contadorPending.length > 0 ? "gold" : "green"} sub={`${contadorPending.length} pending · ${contadorSubmitted.length} sent`} href="/expenses?filter=contador" />
           <KPI icon="👷" label="Unpaid Workers" value={`${fmt(totalPendingTsPay)} DOP`} color="red" sub={`${pendingTsPay.length} timesheets`} href="/timesheets?filter=unpaid" />
           <KPI icon="📊" label={`${monthLabel} Expenses`} value={`${fmt(totalMonthExp)} DOP`} color="blue" sub={`${monthExp.length} entries`} href={selectedMonth ? `/expenses?month=${selectedMonth}` : '/expenses'} />
           <KPI icon="⏱️" label={`${monthLabel} Hours`} value={`${monthHours}h`} color="gold" sub={`${monthTs.length} entries`} href={selectedMonth ? `/timesheets?month=${selectedMonth}` : '/timesheets'} />
