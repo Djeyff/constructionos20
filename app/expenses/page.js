@@ -3,6 +3,7 @@ import { queryDB, buildNameMap, getTitle, getNumber, getSelect, getDate, getRela
 import ConstructionNav from '@/components/ConstructionNav';
 import AddEntryModal from '@/components/AddEntryModal';
 import MonthFilter from '@/components/MonthFilter';
+import ClientFilter from '@/components/ClientFilter';
 import { MarkReimbursedButton, MarkContadorButton } from '@/components/ActionButtons';
 
 export const dynamic = 'force-dynamic';
@@ -11,6 +12,7 @@ export default async function ExpensesPage({ searchParams }) {
   const fmt = (n) => { const a=Math.abs(n||0); return (n<0?'-':'')+a.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2}); };
   const params = await searchParams;
   const selectedMonth = params?.month || null;
+  const selectedClient = params?.client || null;
 
   let expenses=[];
   let clientNames={}, projectNames={};
@@ -27,6 +29,9 @@ export default async function ExpensesPage({ searchParams }) {
     kdriveUrl: getUrl(e,'kDrive') || null,
   }));
 
+  // Get unique client names for filter
+  const uniqueClients = [...new Set(allData.map(e => e.client).filter(Boolean))].sort();
+
   // Filter by month
   let data = allData;
   let monthLabel = 'All Time';
@@ -35,8 +40,13 @@ export default async function ExpensesPage({ searchParams }) {
     const lastDay = new Date(y, m, 0).getDate();
     const start = selectedMonth + '-01';
     const end = `${selectedMonth}-${String(lastDay).padStart(2,'0')}`;
-    data = allData.filter(e => e.date >= start && e.date <= end);
+    data = data.filter(e => e.date >= start && e.date <= end);
     monthLabel = new Date(y, m-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  }
+
+  // Filter by client
+  if (selectedClient) {
+    data = data.filter(e => e.client === selectedClient);
   }
 
   const total = data.reduce((s,e)=>s+e.amount,0);
@@ -92,9 +102,10 @@ export default async function ExpensesPage({ searchParams }) {
           </div>
         </div>
 
-        {/* Month Filter */}
-        <div className="mb-6">
-          <MonthFilter basePath="/expenses" selected={selectedMonth} />
+        {/* Filters */}
+        <div className="flex flex-col gap-3 mb-6">
+          <MonthFilter basePath="/expenses" selected={selectedMonth} extraParams={selectedClient ? { client: selectedClient } : {}} />
+          <ClientFilter basePath="/expenses" clients={uniqueClients} selected={selectedClient} extraParams={selectedMonth ? { month: selectedMonth } : {}} />
         </div>
 
         {/* Mobile Cards */}
