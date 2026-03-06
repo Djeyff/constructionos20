@@ -15,7 +15,7 @@ export async function POST(request) {
     // Only allow specific safe field+value combos
     const allowed = {
       'Employee payment status': ['Not Paid', 'Paid'],
-      'Status': ['Pending Reimbursement', 'Reimbursed'],
+      'Status': ['Pending Reimbursement', 'Submitted, pending transfer', 'Reimbursed'],
     };
     if (!allowed[field] || !allowed[field].includes(value)) {
       return NextResponse.json({ error: 'Invalid field/value' }, { status: 400 });
