@@ -46,6 +46,38 @@ export function MarkPaidButton({ pageId, currentStatus }) {
   );
 }
 
+// Contador cycle: Para Contador → Submitted to Contador
+const CONTADOR_CYCLE = ['Para Contador', 'Submitted to Contador'];
+
+export function MarkContadorButton({ pageId, currentStatus }) {
+  const [status, setStatus] = useState(currentStatus || 'Para Contador');
+  const [loading, setLoading] = useState(false);
+  if (!pageId) return null;
+  if (!CONTADOR_CYCLE.includes(status)) return null;
+
+  const isSent = status === 'Submitted to Contador';
+
+  const handleClick = async (e) => {
+    e.preventDefault(); e.stopPropagation(); setLoading(true);
+    try {
+      const next = isSent ? 'Para Contador' : 'Submitted to Contador';
+      await reverseStatus(pageId, 'Status', next);
+      setStatus(next);
+    } catch { alert('Failed'); }
+    setLoading(false);
+  };
+
+  return (
+    <button onClick={handleClick} disabled={loading}
+      className="px-2 py-0.5 text-[10px] font-medium rounded transition-colors disabled:opacity-50 min-h-[28px] whitespace-nowrap"
+      style={isSent
+        ? { backgroundColor: 'rgba(168,85,247,0.15)', color: '#c084fc', border: '1px solid rgba(168,85,247,0.3)' }
+        : { backgroundColor: 'rgba(234,179,8,0.15)', color: '#facc15', border: '1px solid rgba(234,179,8,0.3)' }
+      }
+    >{loading ? '⏳' : isSent ? '↩ Para Contador' : '✅ Sent to Lisa'}</button>
+  );
+}
+
 // Status cycle: Pending Reimbursement → Submitted - Pending Transfer → Reimbursed → Pending Reimbursement
 const STATUS_CYCLE = ['Pending Reimbursement', 'Submitted - Pending Transfer', 'Reimbursed'];
 
