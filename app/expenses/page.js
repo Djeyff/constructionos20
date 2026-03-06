@@ -113,7 +113,7 @@ export default async function ExpensesPage({ searchParams }) {
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" style={{ background: 'rgba(212,168,83,0.1)', color: '#d4a853' }}>{e.category}</span>
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusColor(e.status)}`}>{e.status}</span>
                 <MarkReimbursedButton pageId={e.id} type="expense" currentStatus={e.status} />
-                <MarkContadorButton pageId={e.id} currentStatus={e.status} />
+                <MarkContadorButton pageId={e.id} currentStatus={e.status} client={e.client} />
                 {e.kdriveUrl && (
                   <a href={e.kdriveUrl} target="_blank" rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium"
@@ -152,7 +152,7 @@ export default async function ExpensesPage({ searchParams }) {
                     <td className="py-2.5 px-4">
                       <div className="flex items-center gap-2">
                         <MarkReimbursedButton pageId={e.id} type="expense" currentStatus={e.status} />
-                <MarkContadorButton pageId={e.id} currentStatus={e.status} />
+                <MarkContadorButton pageId={e.id} currentStatus={e.status} client={e.client} />
                         {e.kdriveUrl && (
                           <a href={e.kdriveUrl} target="_blank" rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium"

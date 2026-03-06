@@ -49,13 +49,24 @@ export function MarkPaidButton({ pageId, currentStatus }) {
 // Contador cycle: Para Contador → Submitted to Contador
 const CONTADOR_CYCLE = ['Para Contador', 'Submitted to Contador'];
 
-export function MarkContadorButton({ pageId, currentStatus }) {
+// Client → Accountant mapping
+const CLIENT_ACCOUNTANT = {
+  'SportingClub LT': 'Lisa',
+};
+const DEFAULT_ACCOUNTANT = 'Max'; // CaseDamare, CaseDamare - Remodelacion, etc.
+
+function getAccountant(client) {
+  return CLIENT_ACCOUNTANT[client] || DEFAULT_ACCOUNTANT;
+}
+
+export function MarkContadorButton({ pageId, currentStatus, client }) {
   const [status, setStatus] = useState(currentStatus || 'Para Contador');
   const [loading, setLoading] = useState(false);
   if (!pageId) return null;
   if (!CONTADOR_CYCLE.includes(status)) return null;
 
   const isSent = status === 'Submitted to Contador';
+  const accountant = getAccountant(client);
 
   const handleClick = async (e) => {
     e.preventDefault(); e.stopPropagation(); setLoading(true);
@@ -74,9 +85,11 @@ export function MarkContadorButton({ pageId, currentStatus }) {
         ? { backgroundColor: 'rgba(168,85,247,0.15)', color: '#c084fc', border: '1px solid rgba(168,85,247,0.3)' }
         : { backgroundColor: 'rgba(234,179,8,0.15)', color: '#facc15', border: '1px solid rgba(234,179,8,0.3)' }
       }
-    >{loading ? '⏳' : isSent ? '↩ Para Contador' : '✅ Sent to Lisa'}</button>
+    >{loading ? '⏳' : isSent ? `↩ Para ${accountant}` : `✅ Sent to ${accountant}`}</button>
   );
 }
+
+export { getAccountant };
 
 // Status cycle: Pending Reimbursement → Submitted - Pending Transfer → Reimbursed → Pending Reimbursement
 const STATUS_CYCLE = ['Pending Reimbursement', 'Submitted - Pending Transfer', 'Reimbursed'];
